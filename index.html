@@ -3,245 +3,196 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
-<title>M50B25 – Mobile 3D Basis</title>
+<title>Safari 3D Würfel Test</title>
 <style>
-html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#080b0e}
-body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#edf2f4}
-#app{position:fixed;inset:0;background:#0b1014}
-#view{position:absolute;inset:0;touch-action:none;overflow:hidden}
-canvas{display:block;width:100%;height:100%;touch-action:none}
-#toolbar{position:absolute;top:calc(10px + env(safe-area-inset-top));left:10px;right:10px;display:flex;gap:7px;flex-wrap:wrap;z-index:5;pointer-events:none}
-button{pointer-events:auto;border:1px solid #40505a;background:#142027e8;color:#eef3f5;border-radius:9px;padding:9px 11px;font:inherit;backdrop-filter:blur(8px)}
-button:active{transform:scale(.97)}
-#title{pointer-events:none;padding:9px 11px;border:1px solid #334149;background:#0b1116d9;border-radius:9px;font-size:12px;color:#c6d0d5}
-#hint{position:absolute;left:50%;bottom:calc(10px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:5;white-space:nowrap;padding:7px 10px;border-radius:8px;background:#080c10d9;border:1px solid #2c373e;color:#aeb9be;font-size:11px}
-#error{display:none;position:absolute;inset:0;place-items:center;text-align:center;padding:30px;color:#e7eef1}
-#card{max-width:330px;background:#11181dcc;border:1px solid #3b4850;border-radius:12px;padding:18px;line-height:1.5}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#0b1014;color:white;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+#app{position:fixed;inset:0}
+canvas{width:100%;height:100%;display:block;touch-action:none}
+#bar{position:absolute;top:calc(12px + env(safe-area-inset-top));left:12px;right:12px;display:flex;gap:8px;align-items:center;z-index:5}
+button{border:1px solid #43515a;background:#17242b;color:#fff;border-radius:10px;padding:10px 13px;font:inherit}
+#label{padding:9px 11px;border-radius:10px;background:#10181ddc;border:1px solid #334149;font-size:13px}
+#hint{position:absolute;bottom:calc(12px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);white-space:nowrap;background:#10171dcc;border:1px solid #334149;border-radius:9px;padding:8px 10px;font-size:11px;color:#bcc6ca}
 </style>
 </head>
 <body>
 <div id="app">
-<div id="view">
 <canvas id="canvas"></canvas>
-<div id="toolbar">
+<div id="bar">
 <button id="reset">↺ Zentrieren</button>
-<button id="front">Front</button>
-<button id="side">Seite</button>
-<button id="top">Oben</button>
-<button id="auto">⟳ Auto</button>
-<div id="title">BMW M50B25 · Mobile 3D</div>
+<div id="label">Safari 3D-Test · Würfel</div>
 </div>
-<div id="hint">☝️ drehen · 🤏 zoomen · Zwei Finger bewegen = verschieben</div>
-<div id="error"><div id="card"><b>3D konnte nicht gestartet werden.</b><br><br>Dein Browser unterstützt WebGL in dieser Ansicht nicht.</div></div>
-</div>
+<div id="hint">☝️ 1 Finger = drehen · 🤏 2 Finger = zoomen</div>
 </div>
 
 <script>
 (() => {
-"use strict";
 const canvas=document.getElementById("canvas");
-const view=document.getElementById("view");
-const gl=canvas.getContext("webgl",{alpha:false,antialias:true,preserveDrawingBuffer:false});
-if(!gl){document.getElementById("error").style.display="grid";return;}
+const gl=canvas.getContext("webgl",{antialias:true,alpha:false});
+if(!gl){document.getElementById("label").textContent="WebGL nicht verfügbar";return;}
 
-const VS=`attribute vec3 aPos;attribute vec3 aNor;
-uniform mat4 uMVP,uModel;varying vec3 vNor;
-void main(){vNor=mat3(uModel)*aNor;gl_Position=uMVP*vec4(aPos,1.0);}`;
-const FS=`precision mediump float;varying vec3 vNor;uniform vec3 uColor;
-void main(){vec3 n=normalize(vNor);vec3 l=normalize(vec3(-.5,.8,1.0));
-vec3 l2=normalize(vec3(.8,.2,-.6));float d=.25+.62*max(dot(n,l),0.0)+.22*max(dot(n,l2),0.0);
-gl_FragColor=vec4(uColor*d,1.0);}`;
+const vertex=`attribute vec3 p;attribute vec3 n;
+uniform mat4 mvp;varying vec3 v;
+void main(){v=n;gl_Position=mvp*vec4(p,1.0);}`;
+
+const fragment=`precision mediump float;varying vec3 v;
+void main(){
+vec3 n=normalize(v);
+vec3 l=normalize(vec3(-.5,.8,1.0));
+float d=.25+.75*max(dot(n,l),0.0);
+gl_FragColor=vec4(vec3(.18,.58,.78)*d,1.0);
+}`;
 
 function shader(type,src){
- const s=gl.createShader(type);gl.shaderSource(s,src);gl.compileShader(s);
- if(!gl.getShaderParameter(s,gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s));
+ const s=gl.createShader(type);
+ gl.shaderSource(s,src);
+ gl.compileShader(s);
  return s;
 }
 const program=gl.createProgram();
-gl.attachShader(program,shader(gl.VERTEX_SHADER,VS));
-gl.attachShader(program,shader(gl.FRAGMENT_SHADER,FS));
-gl.linkProgram(program);gl.useProgram(program);
+gl.attachShader(program,shader(gl.VERTEX_SHADER,vertex));
+gl.attachShader(program,shader(gl.FRAGMENT_SHADER,fragment));
+gl.linkProgram(program);
+gl.useProgram(program);
 
-const loc={
- pos:gl.getAttribLocation(program,"aPos"),
- nor:gl.getAttribLocation(program,"aNor"),
- mvp:gl.getUniformLocation(program,"uMVP"),
- model:gl.getUniformLocation(program,"uModel"),
- color:gl.getUniformLocation(program,"uColor")
-};
+const positions=[
+ -1,-1,-1, 1,-1,-1, 1,1,-1, -1,1,-1,
+ -1,-1,1, 1,-1,1, 1,1,1, -1,1,1
+];
+const normals=[
+ 0,0,-1,0,0,-1,0,0,-1,0,0,-1,
+ 0,0,1,0,0,1,0,0,1,0,0,1
+];
+const faces=[
+ 0,1,2, 0,2,3,
+ 4,6,5, 4,7,6,
+ 0,4,5, 0,5,1,
+ 3,2,6, 3,6,7,
+ 1,5,6, 1,6,2,
+ 0,3,7, 0,7,4
+];
 
-const verts=[],indices=[],ranges=[];
-function addBox(x,y,z,sx,sy,sz,color){
- const base=verts.length/6, X=sx/2,Y=sy/2,Z=sz/2;
- const p=[[-X,-Y,-Z],[X,-Y,-Z],[X,Y,-Z],[-X,Y,-Z],[-X,-Y,Z],[X,-Y,Z],[X,Y,Z],[-X,Y,Z]];
- const f=[
-  [0,1,2,3,0,0,-1],[4,7,6,5,0,0,1],[0,4,5,1,0,-1,0],
-  [3,2,6,7,0,1,0],[0,3,7,4,-1,0,0],[1,5,6,2,1,0,0]
- ];
- for(const q of f){
-   const [a,b,c,d,nx,ny,nz]=q;
-   for(const k of [a,b,c,d]) verts.push(p[k][0]+x,p[k][1]+y,p[k][2]+z,nx,ny,nz);
-   const j=base+(verts.length/6-base)-4;
-   indices.push(j,j+1,j+2,j,j+2,j+3);
- }
- ranges.push({start:indices.length-36,count:36,color});
+const pos=[];
+const nor=[];
+for(const i of faces){
+ pos.push(positions[i*3],positions[i*3+1],positions[i*3+2]);
+ nor.push(normals[i*3],normals[i*3+1],normals[i*3+2]);
 }
-function addCyl(x,y,z,r,h,color,axis="y",segments=32){
- const base=verts.length/6;
- for(let i=0;i<segments;i++){
-   const a=i*Math.PI*2/segments,px=Math.cos(a)*r,pz=Math.sin(a)*r;
-   verts.push(px+x,-h/2+y,pz+z,px,0,pz);
-   verts.push(px+x,h/2+y,pz+z,px,0,pz);
- }
- for(let i=0;i<segments;i++){
-   const a=base+2*i,b=base+2*((i+1)%segments);
-   indices.push(a,b,b+1,a,b+1,a+1);
- }
- const sideStart=indices.length-6*segments;
- // caps
- const top=verts.length/6;verts.push(x,h/2+y,z,0,1,0);
- const bot=verts.length/6;verts.push(x,-h/2+y,z,0,-1,0);
- for(let i=0;i<segments;i++){
-   const a=base+2*i,b=base+2*((i+1)%segments);
-   indices.push(top,b+1,a+1,bot,a,b);
- }
- // This mobile basis keeps cylinders vertical; the engine layout uses mostly boxes.
- ranges.push({start:sideStart,count:indices.length-sideStart,color});
+const pb=gl.createBuffer();
+gl.bindBuffer(gl.ARRAY_BUFFER,pb);
+gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(pos),gl.STATIC_DRAW);
+const nb=gl.createBuffer();
+gl.bindBuffer(gl.ARRAY_BUFFER,nb);
+gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(nor),gl.STATIC_DRAW);
+
+const pLoc=gl.getAttribLocation(program,"p");
+const nLoc=gl.getAttribLocation(program,"n");
+const mvpLoc=gl.getUniformLocation(program,"mvp");
+
+function perspective(fov,aspect,near,far){
+ const q=1/Math.tan(fov/2);
+ const m=new Float32Array(16);
+ m[0]=q/aspect;m[5]=q;m[10]=(far+near)/(near-far);m[11]=-1;m[14]=2*far*near/(near-far);
+ return m;
 }
-
-const metal=[.30,.34,.36], alu=[.55,.58,.59], dark=[.055,.07,.08], black=[.025,.035,.04], rubber=[.035,.045,.048];
-
-// Closed M50B25 silhouette – deliberately stable and clean for the mobile foundation.
-addBox(0,0,0,5.35,2.08,1.72,metal);
-addBox(0,.94,0,5.15,.70,1.78,alu);
-addBox(0,-1.05,0,5.02,.78,1.68,metal);
-addBox(0,-1.78,0,4.76,.68,1.62,dark);
-addBox(1.08,-2.23,0,1.72,.46,1.44,black);
-addBox(0,1.48,0,5.42,.90,1.84,alu);
-addBox(-2.75,.12,0,.78,2.48,1.94,metal);
-addBox(0,2.10,0,5.12,.56,1.60,black);
-addBox(0,2.49,0,4.70,.18,1.42,dark);
-
-// intake
-addBox(.70,.73,-1.13,2.55,.84,.60,[.12,.15,.16]);
-for(let i=-2.5;i<=2.5;i++) addBox(i*.77,.91,-1.40,.54,.68,.54,[.18,.22,.23]);
-addCyl(-.82,.72,-1.50,.44,.50,alu);
-
-// airbox
-addBox(-2.72,.35,-1.30,1.25,1.52,1.32,black);
-addBox(-2.72,1.20,-1.30,1.30,.18,1.38,dark);
-
-// exhaust
-for(let g=0;g<2;g++){
- const x=-1.48+g*2.96;
- addBox(x,1.02,1.16,2.30,1.02,.46,[.43,.45,.46]);
- for(let j=0;j<3;j++) addCyl(x-.62+j*.62,1.02,1.43,.12,.80,[.48,.50,.51]);
-}
-
-// front accessories
-addBox(2.82,.10,0,.58,2.38,1.90,metal);
-addCyl(2.82,-1.02,1.02,.64,.30,dark);
-addCyl(2.82,.14,1.03,.55,.30,alu);
-addBox(2.63,.82,1.08,.82,1.12,.86,alu);
-addCyl(2.16,.98,1.10,.30,.22,metal);
-addBox(-1.98,-.18,1.12,.95,.70,.70,dark);
-
-// bolt/rib details
-for(let x=-2.2;x<=2.2;x+=.55) addBox(x,.02,0,.09,1.42,1.80,[.36,.39,.40]);
-for(let x=-2;x<=2;x+=.5) addBox(x,2.67,0,.07,.08,1.34,[.20,.23,.24]);
-
-const vb=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,vb);
-gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(verts),gl.STATIC_DRAW);
-const ib=gl.createBuffer();gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,ib);
-gl.bufferData(gl.ELEMENT_ARRAY_BUFFER,new Uint16Array(indices),gl.STATIC_DRAW);
-
 function mul(a,b){
  const o=new Float32Array(16);
  for(let r=0;r<4;r++)for(let c=0;c<4;c++)for(let k=0;k<4;k++)o[r*4+c]+=a[r*4+k]*b[k*4+c];
  return o;
 }
-function perspective(fov,aspect,near,far){
- const q=1/Math.tan(fov/2),o=new Float32Array(16);
- o[0]=q/aspect;o[5]=q;o[10]=(far+near)/(near-far);o[11]=-1;o[14]=2*far*near/(near-far);return o;
+function rx(a){
+ const c=Math.cos(a),s=Math.sin(a);
+ return new Float32Array([1,0,0,0,0,c,-s,0,0,s,c,0,0,0,0,1]);
 }
-function lookAt(ex,ey,ez,cx,cy,cz){
- let z=[ex-cx,ey-cy,ez-cz],zl=Math.hypot(...z);z=z.map(v=>v/zl);
- let x=[z[2],0,-z[0]],xl=Math.hypot(...x);x=x.map(v=>v/xl);
- let y=[x[1]*z[2]-x[2]*z[1],x[2]*z[0]-x[0]*z[2],x[0]*z[1]-x[1]*z[0]];
- return new Float32Array([
- x[0],y[0],z[0],0,x[1],y[1],z[1],0,x[2],y[2],z[2],0,
- -(x[0]*ex+x[1]*ey+x[2]*ez),-(y[0]*ex+y[1]*ey+y[2]*ez),-(z[0]*ex+z[1]*ey+z[2]*ez),1
- ]);
+function ry(a){
+ const c=Math.cos(a),s=Math.sin(a);
+ return new Float32Array([c,0,s,0,0,1,0,0,-s,0,c,0,0,0,0,1]);
+}
+function translate(z){
+ return new Float32Array([1,0,0,0,0,1,0,0,0,0,1,0,0,0,z,1]);
 }
 
-let yaw=-.62,pitch=-.18,distance=7.7,target=[0,0,0],auto=false;
-let pointers=new Map(),lastCenter=null,lastDistance=0;
-function clamp(){pitch=Math.max(-1.42,Math.min(1.42,pitch));distance=Math.max(2.4,Math.min(24,distance));}
-function render(){
- const w=Math.max(1,view.clientWidth),h=Math.max(1,view.clientHeight),ratio=Math.min(window.devicePixelRatio||1,2);
- if(canvas.width!==Math.floor(w*ratio)||canvas.height!==Math.floor(h*ratio)){canvas.width=Math.floor(w*ratio);canvas.height=Math.floor(h*ratio);}
- gl.viewport(0,0,canvas.width,canvas.height);
- gl.enable(gl.DEPTH_TEST);gl.depthFunc(gl.LEQUAL);gl.clearColor(.035,.047,.058,1);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
- const cp=Math.cos(pitch),sp=Math.sin(pitch),cy=Math.cos(yaw),sy=Math.sin(yaw);
- const ex=target[0]+distance*cp*sy,ey=target[1]+distance*sp,ez=target[2]+distance*cp*cy;
- const vp=mul(perspective(.72,w/h,.05,80),lookAt(ex,ey,ez,target[0],target[1],target[2]));
- gl.useProgram(program);gl.bindBuffer(gl.ARRAY_BUFFER,vb);gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,ib);
- gl.enableVertexAttribArray(loc.pos);gl.vertexAttribPointer(loc.pos,3,gl.FLOAT,false,24,0);
- gl.enableVertexAttribArray(loc.nor);gl.vertexAttribPointer(loc.nor,3,gl.FLOAT,false,24,12);
- gl.uniformMatrix4fv(loc.mvp,false,vp);gl.uniformMatrix4fv(loc.model,false,new Float32Array([1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1]));
- // Geometry is batched but uses one neutral metal color for a clean foundation.
- gl.uniform3f(loc.color,.37,.40,.41);gl.drawElements(gl.TRIANGLES,indices.length,gl.UNSIGNED_SHORT,0);
- if(auto)yaw+=.003;
- requestAnimationFrame(render);
-}
+let yaw=.65,pitch=-.35,distance=5.0;
+const pointers=new Map();
+let lastSingle=null,lastPinch=0;
 
-function setView(p,y,d){pitch=p;yaw=y;distance=d;target=[0,0,0];}
-function reset(){setView(-.18,-.62,7.7)}
-function front(){setView(-.08,0,7.7)}
-function side(){setView(-.08,Math.PI/2,7.7)}
-function topView(){setView(-1.20,0,7.7)}
+function reset(){yaw=.65;pitch=-.35;distance=5.0;}
 document.getElementById("reset").onclick=reset;
-document.getElementById("front").onclick=front;
-document.getElementById("side").onclick=side;
-document.getElementById("top").onclick=topView;
-document.getElementById("auto").onclick=()=>{auto=!auto};
 
-function getPoints(){
- return Array.from(pointers.values());
+function resize(){
+ const r=canvas.getBoundingClientRect(),d=Math.min(devicePixelRatio||1,2);
+ const w=Math.max(1,Math.floor(r.width*d)),h=Math.max(1,Math.floor(r.height*d));
+ if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;}
 }
+function draw(){
+ resize();
+ gl.viewport(0,0,canvas.width,canvas.height);
+ gl.enable(gl.DEPTH_TEST);
+ gl.clearColor(.035,.05,.065,1);
+ gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
+
+ const aspect=canvas.width/canvas.height;
+ let model=mul(ry(yaw),rx(pitch));
+ let mvp=mul(perspective(.78,aspect,.1,50),mul(translate(-distance),model));
+
+ gl.useProgram(program);
+ gl.bindBuffer(gl.ARRAY_BUFFER,pb);
+ gl.enableVertexAttribArray(pLoc);
+ gl.vertexAttribPointer(pLoc,3,gl.FLOAT,false,0,0);
+ gl.bindBuffer(gl.ARRAY_BUFFER,nb);
+ gl.enableVertexAttribArray(nLoc);
+ gl.vertexAttribPointer(nLoc,3,gl.FLOAT,false,0,0);
+ gl.uniformMatrix4fv(mvpLoc,false,mvp);
+ gl.drawArrays(gl.TRIANGLES,0,36);
+
+ requestAnimationFrame(draw);
+}
+
 canvas.addEventListener("pointerdown",e=>{
- e.preventDefault();canvas.setPointerCapture(e.pointerId);
+ e.preventDefault();
+ canvas.setPointerCapture(e.pointerId);
  pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
+ if(pointers.size===1)lastSingle={x:e.clientX,y:e.clientY};
  if(pointers.size===2){
-   const p=getPoints();lastCenter={x:(p[0].x+p[1].x)/2,y:(p[0].y+p[1].y)/2};
-   lastDistance=Math.hypot(p[0].x-p[1].x,p[0].y-p[1].y);
+   const a=[...pointers.values()];
+   lastPinch=Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y);
  }
 });
 canvas.addEventListener("pointermove",e=>{
  if(!pointers.has(e.pointerId))return;
  pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
- const p=getPoints();
- if(p.length===1){
-   if(!canvas._lastSingle)canvas._lastSingle={x:e.clientX,y:e.clientY};
-   const q=canvas._lastSingle;
-   yaw+=(e.clientX-q.x)*.008;pitch+=(e.clientY-q.y)*.006;
-   canvas._lastSingle={x:e.clientX,y:e.clientY};clamp();
- }else if(p.length===2){
-   const center={x:(p[0].x+p[1].x)/2,y:(p[0].y+p[1].y)/2};
-   const dist=Math.hypot(p[0].x-p[1].x,p[0].y-p[1].y);
-   if(lastDistance>0)distance*=lastDistance/dist;
-   if(lastCenter){target[0]-=(center.x-lastCenter.x)*.004;target[1]+=(center.y-lastCenter.y)*.004;}
-   lastCenter=center;lastDistance=dist;clamp();
+ const a=[...pointers.values()];
+
+ if(a.length===1){
+   if(!lastSingle){lastSingle={x:e.clientX,y:e.clientY};return;}
+   yaw+=(e.clientX-lastSingle.x)*.01;
+   pitch+=(e.clientY-lastSingle.y)*.008;
+   pitch=Math.max(-1.5,Math.min(1.5,pitch));
+   lastSingle={x:e.clientX,y:e.clientY};
+ }
+
+ if(a.length===2){
+   const dist=Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y);
+   if(lastPinch>0)distance*=lastPinch/dist;
+   distance=Math.max(2.2,Math.min(12,distance));
+   lastPinch=dist;
  }
 });
-function endPointer(e){
- pointers.delete(e.pointerId);canvas._lastSingle=null;
- if(pointers.size<2){lastCenter=null;lastDistance=0}
+function end(e){
+ pointers.delete(e.pointerId);
+ lastSingle=null;
+ if(pointers.size<2)lastPinch=0;
 }
-canvas.addEventListener("pointerup",endPointer);canvas.addEventListener("pointercancel",endPointer);
-canvas.addEventListener("wheel",e=>{e.preventDefault();distance*=Math.exp(e.deltaY*.0017);clamp()},{passive:false});
-window.addEventListener("resize",()=>{});
-reset();render();
+canvas.addEventListener("pointerup",end);
+canvas.addEventListener("pointercancel",end);
+canvas.addEventListener("wheel",e=>{
+ e.preventDefault();
+ distance*=Math.exp(e.deltaY*.0018);
+ distance=Math.max(2.2,Math.min(12,distance));
+},{passive:false});
+
+reset();
+draw();
 })();
 </script>
-</body></html>
+</body>
+</html>
