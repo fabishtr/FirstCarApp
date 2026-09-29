@@ -2,146 +2,167 @@
 <html lang="de">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>M50B25 Explorer</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#0d1117">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="M50B25 Explorer">
+<title>M50B25 Explorer – Zerlegung</title>
 <style>
-*{box-sizing:border-box} body{margin:0;font-family:system-ui,-apple-system,Segoe UI,sans-serif;background:#101318;color:#eef2f7}
-header{padding:18px 22px;border-bottom:1px solid #2a3038;background:#171b21;display:flex;justify-content:space-between;align-items:center;gap:16px}
-h1{font-size:22px;margin:0}.sub{color:#9da7b3;font-size:13px;margin-top:3px}
-.app{display:grid;grid-template-columns:1fr 360px;min-height:calc(100vh - 76px)}
-.viewer{position:relative;display:flex;align-items:center;justify-content:center;padding:28px;background:radial-gradient(circle at 50% 45%,#26303b 0,#141920 45%,#0d1014 100%);overflow:hidden}
-.engine{width:min(760px,90%);aspect-ratio:1.55;position:relative;filter:drop-shadow(0 24px 30px #0008)}
-.block{position:absolute;left:25%;top:31%;width:51%;height:42%;border-radius:14px;background:linear-gradient(145deg,#69737e,#343b43);border:3px solid #8d98a3;box-shadow:inset 0 0 0 7px #252b31}
-.head{position:absolute;left:27%;top:18%;width:47%;height:20%;border-radius:10px;background:linear-gradient(145deg,#9aa4ad,#4a535c);border:3px solid #c0c7ce}
-.cover{position:absolute;left:30%;top:8%;width:41%;height:12%;border-radius:8px;background:#20252b;border:2px solid #555f69}
-.intake{position:absolute;left:70%;top:34%;width:20%;height:25%;border-radius:8px;background:#3f6d82;border:3px solid #76a8bc;transform:skewY(-8deg)}
-.exhaust{position:absolute;left:12%;top:56%;width:25%;height:17%;border-radius:8px;background:#555b61;border:3px solid #899199;transform:skewY(7deg)}
-.cooling{position:absolute;left:16%;top:25%;width:11%;height:22%;border-radius:8px;background:#526b78;border:3px solid #86a6b4}
-.fuel{position:absolute;left:39%;top:45%;width:31%;height:10%;border-radius:7px;background:#7b4d37;border:3px solid #b77b5d}
-.electrics{position:absolute;left:71%;top:61%;width:15%;height:12%;border-radius:8px;background:#4d5661;border:3px solid #87919b}
-.crank{position:absolute;left:33%;top:67%;width:35%;height:10%;border-radius:50%;border:8px solid #c0c6ca;background:#252b30}
-.part{position:absolute;cursor:pointer;transition:.18s;outline:none}.part:hover,.part:focus{transform:scale(1.04);filter:brightness(1.25);z-index:5}
-.label{position:absolute;left:50%;top:82%;transform:translateX(-50%);font-size:14px;color:#c9d1d9;text-align:center;white-space:nowrap}
-.hint{position:absolute;left:24px;bottom:20px;color:#8f99a5;font-size:13px}
-.panel{padding:24px;background:#171b21;border-left:1px solid #2a3038;overflow:auto}.panel h2{margin:0 0 8px;font-size:25px}.tag{display:inline-block;padding:5px 9px;border-radius:999px;background:#28313a;color:#b9d9e8;font-size:12px;margin-bottom:18px}
-.panel p{line-height:1.6;color:#c5ccd4}.panel h3{font-size:14px;text-transform:uppercase;letter-spacing:.08em;color:#8e9aa7;margin-top:24px}
-ul{padding-left:20px;color:#c5ccd4;line-height:1.7}
-button{background:#27313b;border:1px solid #3d4955;color:#e9eef3;padding:9px 12px;border-radius:8px;cursor:pointer}button:hover{background:#313d49}
-.modebar{position:absolute;top:18px;left:18px;right:18px;display:flex;align-items:center;gap:10px;z-index:20}
-.modebar span{font-size:13px;color:#9da7b3;margin-left:auto}
-.part{transition:opacity .28s,transform .18s,filter .18s}
-.part.hidden{opacity:0;pointer-events:none}
-.part.locked{opacity:.22;filter:grayscale(.7);pointer-events:none}
-.part.unlocked{box-shadow:0 0 0 2px #8cc8e5aa}
-.decomp-active .label{color:#b9d9e8}
-@media(max-width:600px){.modebar{flex-wrap:wrap}.modebar span{margin-left:0;width:100%}}
-.empty{color:#9ca6b1;line-height:1.6}
-@media(max-width:850px){.app{grid-template-columns:1fr}.panel{border-left:0;border-top:1px solid #2a3038}.viewer{min-height:55vh}}
+:root{--bg:#0d1117;--panel:#151b23;--line:#303944;--text:#eef3f8;--muted:#9ba7b4;--accent:#79c7e8;--accent2:#e7b76a}
+*{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif}
+body{min-height:100svh}button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+header{padding:calc(14px + env(safe-area-inset-top)) 16px 14px;background:#11161d;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:12px}
+h1{font-size:20px;margin:0}.sub{font-size:12px;color:var(--muted);margin-top:3px}
+.topbtn{background:#222b35;border:1px solid #3b4652;border-radius:9px;padding:9px 12px}
+.app{display:grid;grid-template-columns:minmax(0,1fr) 370px;min-height:calc(100svh - 76px)}
+.viewer{position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;padding:70px 22px 28px;background:radial-gradient(circle at 50% 45%,#28333f 0,#151b22 45%,#0a0d11 100%)}
+.toolbar{position:absolute;z-index:50;top:14px;left:14px;right:14px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.toolbar button{background:#202933;border:1px solid #3b4652;border-radius:9px;padding:9px 11px;font-size:13px}
+.toolbar button.active{background:#294b5a;border-color:#70b7d4}
+.step{margin-left:auto;color:var(--muted);font-size:12px}
+.canvas{width:min(900px,96%);aspect-ratio:1.45;position:relative;filter:drop-shadow(0 25px 28px #0009)}
+.engine{position:absolute;inset:0}
+.layer{position:absolute;left:50%;transform:translateX(-50%);transition:.35s ease;cursor:pointer;outline:none}
+.layer:hover,.layer:focus{filter:brightness(1.18);transform:translateX(-50%) scale(1.018)}
+.layer.removed{opacity:0;pointer-events:none;transform:translate(-50%,-80px) scale(.92)}
+.layer.locked{opacity:.18;pointer-events:none;filter:grayscale(.8)}
+.layer.unlocked{filter:drop-shadow(0 0 8px #79c7e855)}
+/* Exploded engine drawing */
+.valvecover{top:2%;width:45%;height:11%;border-radius:12px;background:linear-gradient(145deg,#313941,#171c22);border:3px solid #66727e}
+.coils{top:14%;width:43%;height:7%;border-radius:8px;background:#232a31;border:2px solid #606c77}
+.head{top:21%;width:54%;height:18%;border-radius:11px;background:linear-gradient(145deg,#aab3bb,#59636c);border:3px solid #d0d6da;box-shadow:inset 0 0 0 5px #717c85}
+.cams{top:25%;width:42%;height:7%;border-radius:8px;background:#343c44;border:3px solid #89949d}
+.block{top:40%;width:58%;height:32%;border-radius:12px;background:linear-gradient(145deg,#727c85,#343b43);border:3px solid #aab2b9;box-shadow:inset 0 0 0 8px #282e34}
+.pistons{top:46%;width:43%;height:17%;display:flex;justify-content:space-between;align-items:center}
+.piston{width:16%;height:72%;border-radius:40% 40% 14% 14%;background:linear-gradient(90deg,#a8afb4,#545d64);border:3px solid #d0d5d8}
+.rods{top:56%;width:38%;height:16%;display:flex;justify-content:space-around;align-items:center}
+.rod{width:9%;height:86%;border-radius:40%;background:#777f86;border:2px solid #b4bcc2;transform:rotate(9deg)}
+.crank{top:65%;width:51%;height:12%;border-radius:50%;background:#252b30;border:8px solid #c1c7ca}
+.oilpan{top:75%;width:56%;height:13%;border-radius:8px 8px 24px 24px;background:linear-gradient(145deg,#3c454d,#171c20);border:3px solid #707b84}
+.intake{left:78%;top:36%;transform:none;width:20%;height:18%;border-radius:10px;background:#3d7186;border:3px solid #83b7c9}
+.intake:hover,.intake:focus{transform:scale(1.018)}
+.exhaust{left:5%;top:44%;transform:none;width:20%;height:19%;border-radius:10px;background:#555d64;border:3px solid #909aa2}
+.exhaust:hover,.exhaust:focus{transform:scale(1.018)}
+.waterpump{left:15%;top:24%;transform:none;width:10%;height:12%;border-radius:50%;background:#60727b;border:3px solid #a5bac3}
+.waterpump:hover,.waterpump:focus{transform:scale(1.018)}
+.label{position:absolute;bottom:1%;left:50%;transform:translateX(-50%);font-size:13px;color:#b9c4ce;white-space:nowrap}
+.legend{position:absolute;left:14px;bottom:10px;color:#7f8b97;font-size:11px}
+.panel{background:var(--panel);border-left:1px solid var(--line);padding:22px;overflow:auto}
+.badge{display:inline-block;background:#27313b;border:1px solid #3a4652;border-radius:999px;padding:5px 9px;color:#b9d9e8;font-size:11px;margin-bottom:10px}
+.panel h2{margin:0 0 8px;font-size:25px}.panel p{color:#c6ced6;line-height:1.58}.panel h3{font-size:12px;text-transform:uppercase;letter-spacing:.09em;color:#87939f;margin:23px 0 8px}
+.panel ul{margin:0;padding-left:20px;color:#c7cfd7;line-height:1.65}
+.fact{background:#10161d;border:1px solid #2d3741;border-radius:10px;padding:11px 12px;margin-top:14px;color:#cbd4dc;font-size:13px}
+.next{width:100%;margin-top:18px;padding:12px;border-radius:9px;background:#274c5b;border:1px solid #6aafca}
+.small{font-size:12px;color:var(--muted)}
+@media(max-width:850px){
+ .app{display:block}.viewer{min-height:58svh}.panel{border-left:0;border-top:1px solid var(--line);min-height:42svh}
+ .step{width:100%;margin-left:0}.canvas{width:100%}
+}
+@media(max-width:600px){
+ header{padding-top:calc(12px + env(safe-area-inset-top))}.viewer{padding:82px 6px 25px}.toolbar{top:10px;left:10px;right:10px}.toolbar button{font-size:12px;padding:8px 9px}
+ .panel{padding:18px}.panel h2{font-size:22px}.legend{font-size:10px}
+}
 </style>
 </head>
 <body>
 <header>
-  <div><h1>M50B25 Explorer</h1><div class="sub">Interaktiver Lernprototyp · BMW E34 525i</div></div>
-  <button onclick="showOverview()">Übersicht</button>
+<div><h1>M50B25 Explorer</h1><div class="sub">E34 525i · M50B25 · interaktive Zerlegung</div></div>
+<button class="topbtn" onclick="resetAll()">↺ Reset</button>
 </header>
 <div class="app">
 <section class="viewer">
-  <div class="modebar">
-    <button id="decomposeBtn" onclick="toggleDecompose()">🔧 Zerlegungsmodus: AUS</button>
-    <button onclick="resetEngine()">↺ Zurücksetzen</button>
-    <span id="stepText">Schritt 1 von 5</span>
+<div class="toolbar">
+<button id="modeBtn" onclick="toggleMode()">🔧 Zerlegung starten</button>
+<button onclick="prevStep()">← Zurück</button>
+<button onclick="nextStep()">Weiter →</button>
+<div class="step" id="step">Übersicht</div>
+</div>
+
+<div class="canvas">
+<div class="engine" id="engine">
+  <div class="layer valvecover" data-id="valvecover" tabindex="0"></div>
+  <div class="layer coils" data-id="coils" tabindex="0"></div>
+  <div class="layer head" data-id="head" tabindex="0"></div>
+  <div class="layer cams" data-id="cams" tabindex="0"></div>
+  <div class="layer block" data-id="block" tabindex="0"></div>
+  <div class="layer pistons" data-id="pistons" tabindex="0">
+    <span class="piston"></span><span class="piston"></span><span class="piston"></span><span class="piston"></span><span class="piston"></span><span class="piston"></span>
   </div>
-  <div class="engine" id="engine" aria-label="Schematische Motoransicht">
-    <div class="part head layer-1" tabindex="0" data-id="head"></div>
-    <div class="part cover layer-0" tabindex="0" data-id="valve"></div>
-    <div class="part intake layer-2" tabindex="0" data-id="intake"></div>
-    <div class="part exhaust layer-2" tabindex="0" data-id="exhaust"></div>
-    <div class="part cooling layer-2" tabindex="0" data-id="cooling"></div>
-    <div class="part fuel layer-2" tabindex="0" data-id="fuel"></div>
-    <div class="part electrics layer-2" tabindex="0" data-id="electric"></div>
-    <div class="part crank layer-4" tabindex="0" data-id="crank"></div>
-    <div class="block part layer-3" tabindex="0" data-id="block"></div>
-    <div class="label" id="engineLabel">Klicke auf eine Hauptkomponente</div>
+  <div class="layer rods" data-id="rods" tabindex="0">
+    <span class="rod"></span><span class="rod"></span><span class="rod"></span><span class="rod"></span><span class="rod"></span><span class="rod"></span>
   </div>
-  <div class="hint" id="hint">Zerlegungsmodus: Schalte Baugruppen nacheinander aus, um tieferliegende Komponenten sichtbar zu machen.</div>
+  <div class="layer crank" data-id="crank" tabindex="0"></div>
+  <div class="layer oilpan" data-id="oilpan" tabindex="0"></div>
+  <div class="layer intake" data-id="intake" tabindex="0"></div>
+  <div class="layer exhaust" data-id="exhaust" tabindex="0"></div>
+  <div class="layer waterpump" data-id="waterpump" tabindex="0"></div>
+  <div class="label">Tippe auf ein Bauteil für die Erklärung</div>
+</div>
+</div>
+<div class="legend">Schematische Explosionsansicht – Bauteile sind bewusst vereinfacht dargestellt.</div>
 </section>
+
 <aside class="panel" id="panel"></aside>
 </div>
+
 <script>
-const data={
-overview:{title:"M50B25",tag:"Motorübersicht",text:"Willkommen im ersten Prototypen. Wähle eine Hauptkomponente in der schematischen Motoransicht aus. Jede Auswahl erklärt Zweck, Zusammenspiel und typische Lernfragen.",items:["Zylinderkopf & Ventiltrieb","Zylinderblock & Kurbeltrieb","Ansaugsystem","Abgasanlage","Kühlsystem","Kraftstoffversorgung","Motorelektrik"]},
-head:{title:"Zylinderkopf",tag:"Mechanik",text:"Der Zylinderkopf sitzt auf dem Zylinderblock und enthält beim M50 unter anderem Brennräume, Ventiltrieb und die Nockenwellen. Er bildet einen zentralen Teil des Gaswechsels.",why:"Er ermöglicht das kontrollierte Ein- und Ausströmen der Gase und dichtet zusammen mit der Zylinderkopfdichtung den Brennraum ab.",links:["Nockenwellen","Ventile","Zylinderblock","Kühlkanäle"]},
-valve:{title:"Ventiltrieb / Ventildeckel",tag:"Mechanik",text:"Unter dem Ventildeckel befindet sich der Ventiltrieb. Die Nockenwellen bestimmen über ihre Nocken, wann die Ventile öffnen und schließen.",why:"Der Motor benötigt eine präzise zeitliche Abstimmung zwischen Kolbenbewegung und Gaswechsel.",links:["Nockenwellen","Ventile","Steuerkette"]},
-block:{title:"Zylinderblock",tag:"Grundmotor",text:"Der Zylinderblock bildet das tragende Gehäuse des Grundmotors. In ihm befinden sich die Zylinder und die Bereiche für Kurbeltrieb, Schmierung und Kühlung.",why:"Er hält die bewegten Komponenten in präziser Lage und nimmt die hohen Kräfte und Temperaturen des Motorbetriebs auf.",links:["Kolben","Pleuel","Kurbelwelle","Hauptlager"]},
-crank:{title:"Kurbeltrieb",tag:"Kraftumwandlung",text:"Zum Kurbeltrieb gehören insbesondere Kolben, Pleuel und Kurbelwelle. Die Verbrennung erzeugt Druck auf den Kolben; über das Pleuel wird daraus eine Drehbewegung der Kurbelwelle.",why:"Die Räder benötigen letztlich eine nutzbare Drehbewegung. Der Kurbeltrieb ist die mechanische Verbindung zwischen Verbrennung und Motordrehung.",links:["Kolben","Pleuel","Kurbelwelle","Lager"]},
-intake:{title:"Ansaugsystem",tag:"Gemischbildung",text:"Das Ansaugsystem führt Luft zum Motor und verteilt sie auf die Zylinder. Beim M50 gehören dazu unter anderem Luftführung, Drosselklappe und Ansaugkrümmer.",why:"Für die Verbrennung muss jeder Zylinder zur richtigen Zeit die benötigte Luftmenge erhalten.",links:["Luftfilter","Drosselklappe","Ansaugkrümmer"]},
-exhaust:{title:"Abgasanlage",tag:"Gaswechsel",text:"Nach der Verbrennung müssen die Abgase aus den Zylindern abgeführt werden. Die Abgasanlage führt und behandelt diese Gase.",why:"Ein guter Abgasstrom unterstützt den Gaswechsel und reduziert schädliche Emissionen.",links:["Abgaskrümmer","Katalysator","Schalldämpfer"]},
-cooling:{title:"Kühlsystem",tag:"Thermomanagement",text:"Das Kühlsystem führt Wärme vom Motor ab und hält die Betriebstemperatur in einem geeigneten Bereich.",why:"Zu hohe Temperaturen können Bauteile und Schmierstoff schädigen; zu niedrige Temperaturen verschlechtern ebenfalls den effizienten Betrieb.",links:["Wasserpumpe","Thermostat","Kühler","Kühlmittel"]},
-fuel:{title:"Kraftstoffversorgung",tag:"Kraftstoff",text:"Die Kraftstoffanlage stellt dem Motor Kraftstoff in der benötigten Menge und zum richtigen Zeitpunkt bereit.",why:"Die Motorsteuerung muss Kraftstoffmenge und Betriebszustand aufeinander abstimmen.",links:["Kraftstoffpumpe","Einspritzventile","Kraftstoffdruck"]},
-electric:{title:"Motorelektrik",tag:"Steuerung",text:"Sensoren, Steuergerät, Zündanlage und elektrische Verbraucher bilden einen wesentlichen Teil der Motorsteuerung.",why:"Moderne Motoren brauchen Informationen über Betriebszustände, um Einspritzung, Zündung und andere Funktionen zu steuern.",links:["Sensoren","Motorsteuergerät","Zündspulen","Batterie"]},
+const parts={
+overview:{title:"M50B25 – Motor",tag:"Ausgangspunkt",text:"Hier beginnt die Zerlegung. Wir betrachten den Motor als Baugruppen und gehen anschließend bis zu einzelnen Komponenten des Kurbel- und Ventiltriebs.",why:"Die Reihenfolge ist didaktisch wichtig: Erst verstehen wir die Lage und Aufgabe einer Baugruppe, dann nehmen wir sie weg und untersuchen, was darunter liegt.",links:["Ventildeckel","Zylinderkopf","Zylinderblock","Kurbeltrieb","Ölwanne","Ansaugung","Abgasseite","Kühlung"]},
+valvecover:{title:"Ventildeckel",tag:"Zerlegung 1",text:"Der Ventildeckel schließt den oberen Bereich des Zylinderkopfs ab und hält das Motoröl im Bereich des Ventiltriebs. Unter ihm liegen die Nockenwellen und der Ventiltrieb.",why:"Erst wenn diese Abdeckung entfernt ist, können wir den Ventiltrieb direkt betrachten.",links:["Nockenwellen","Zylinderkopf","Dichtung","Kurbelgehäuseentlüftung"]},
+coils:{title:"Zündspulen",tag:"Zündung",text:"Die Zündspulen erzeugen die für die Zündkerzen benötigte Hochspannung. Beim M50 mit Einzelzündspulen sitzt jeweils eine Spule über einer Zündkerze.",why:"Die Zündung muss im richtigen Moment einen Funken erzeugen, damit das verdichtete Gemisch verbrennen kann.",links:["Zündkerzen","Motorsteuerung","Kurbelwellen-/Nockenwellensignal"]},
+head:{title:"Zylinderkopf",tag:"Baugruppe",text:"Der Zylinderkopf enthält die Brennräume sowie den Ventiltrieb. Beim M50B25 arbeiten zwei obenliegende Nockenwellen (DOHC) mit vier Ventilen pro Zylinder.",why:"Hier findet der kontrollierte Gaswechsel statt: Frischgas hinein, Abgas hinaus.",links:["Nockenwellen","Einlassventile","Auslassventile","Zylinderkopfdichtung"]},
+cams:{title:"Nockenwellen",tag:"Ventiltrieb",text:"Die Nockenwellen betätigen die Ventile über den Ventiltrieb. Ihre Stellung zur Kurbelwelle bestimmt, wann die Ventile öffnen und schließen.",why:"Die Ventile müssen exakt zum Bewegungsablauf der Kolben arbeiten. Schon kleine Abweichungen der Steuerzeiten können den Motorlauf stark beeinflussen.",links:["Ventile","Hydrostößel","Steuerkette","Kurbelwelle"]},
+block:{title:"Zylinderblock",tag:"Grundmotor",text:"Der Zylinderblock bildet das tragende Gehäuse des Grundmotors. In den sechs Zylindern bewegen sich die Kolben; im unteren Bereich sitzt die Kurbelwelle.",why:"Der Block hält die bewegten Bauteile geometrisch präzise und führt Kräfte, Öl und Kühlmittel.",links:["Zylinderlaufbahnen","Kolben","Pleuel","Kurbelwelle","Hauptlager"]},
+pistons:{title:"Kolben",tag:"Kurbeltrieb",text:"Der M50B25 besitzt sechs Kolben. Jeder Kolben bewegt sich im Zylinder auf und ab und überträgt die Kraft der Verbrennung über das Pleuel.",why:"Der Kolben nimmt den Verbrennungsdruck auf. Seine lineare Bewegung wird später über das Pleuel in eine Drehbewegung der Kurbelwelle umgewandelt.",links:["Kolbenringe","Pleuel","Zylinderlaufbahn","Kurbelwelle"]},
+rods:{title:"Pleuel",tag:"Kraftübertragung",text:"Jedes Pleuel verbindet einen Kolben mit der Kurbelwelle. Es muss hohe wechselnde Zug- und Druckkräfte übertragen.",why:"Ohne das Pleuel gäbe es keine mechanische Verbindung zwischen der auf- und abgehenden Kolbenbewegung und der rotierenden Kurbelwelle.",links:["Kolbenbolzen","Pleuellager","Kurbelzapfen"]},
+crank:{title:"Kurbelwelle",tag:"Kraftumwandlung",text:"Die Kurbelwelle nimmt die Kräfte der Pleuel auf und wandelt die Hubbewegung der Kolben in Drehbewegung um. Sie ist über Hauptlager im Motorblock gelagert.",why:"Das Getriebe benötigt eine rotierende Antriebsleistung. Die Kurbelwelle ist die zentrale mechanische Ausgangswelle des Motors.",links:["Hauptlager","Pleuellager","Schwungrad","Ölpumpe"]},
+oilpan:{title:"Ölwanne",tag:"Schmierung",text:"Die Ölwanne bildet den unteren Vorratsraum des Motoröls. Von hier wird das Öl über die Ansaugung der Ölpumpe wieder in den Schmierkreislauf gefördert.",why:"Motoröl reduziert Reibung, führt Wärme ab und schützt hoch belastete Lager- und Gleitflächen.",links:["Ölpumpe","Ölsieb","Kurbelwelle","Ölfilter"]},
+intake:{title:"Ansaugung",tag:"Gaswechsel",text:"Die Ansaugseite führt die benötigte Luft zum Motor. Zu ihr gehören unter anderem Luftführung, Drosselklappe und Ansaugkrümmer.",why:"Die Luftmenge beeinflusst zusammen mit der Kraftstoffmenge die Leistung und den Verbrennungsablauf.",links:["Luftfilter","Luftmengen-/Luftmassensignal","Drosselklappe","Ansaugkrümmer"]},
+exhaust:{title:"Abgasseite",tag:"Gaswechsel",text:"Die Abgasseite sammelt die Verbrennungsgase aus den Zylindern und führt sie zur weiteren Abgasbehandlung.",why:"Die Abgase müssen kontrolliert aus den Zylindern abgeführt werden, damit der nächste Ansaugtakt ausreichend Frischgas aufnehmen kann.",links:["Auslassventile","Abgaskrümmer","Katalysator","Schalldämpfer"]},
+waterpump:{title:"Wasserpumpe",tag:"Kühlung",text:"Die Wasserpumpe zirkuliert das Kühlmittel durch Motor und Kühlsystem. Dadurch wird Wärme vom Motor zum Kühler transportiert.",why:"Verbrennung erzeugt sehr viel Wärme. Ein stabiler Kühlmittelkreislauf schützt den Motor vor Überhitzung.",links:["Thermostat","Kühler","Kühlmittelkanäle"]},
 };
 
-const decompSteps = [
-  {name:"Außenaufbau", hide:["cover"], unlock:["head","intake","exhaust","cooling","fuel","electric","block","crank"], text:"Entferne zuerst den Ventildeckel. Danach werden die großen Baugruppen sichtbar."},
-  {name:"Zylinderkopf", hide:["head"], unlock:["block","crank"], text:"Der Zylinderkopf ist ausgeblendet. Der obere Bereich des Grundmotors ist jetzt freigelegt."},
-  {name:"Zylinderblock", hide:["block"], unlock:["crank"], text:"Der Zylinderblock ist ausgeblendet. Der Kurbeltrieb wird sichtbar."},
-  {name:"Kurbeltrieb", hide:["crank"], unlock:[], text:"Der Kurbeltrieb ist freigelegt. In der nächsten Ausbaustufe würden Kolben, Pleuel und Kurbelwelle einzeln zerlegt."},
-  {name:"Detailstufe", hide:[], unlock:[], text:"Ende des Prototyps. Diese Stufe ist vorbereitet für echte Einzelteile und Animationen."}
+const steps=[
+ {name:"1 · Außen",remove:["valvecover"],unlock:["valvecover","intake","exhaust","waterpump","coils","head","block","oilpan","crank","pistons","rods","cams"],message:"Entferne den Ventildeckel, um den Ventiltrieb freizulegen."},
+ {name:"2 · Ventiltrieb",remove:["coils","cams"],unlock:["coils","cams","head"],message:"Nach dem Entfernen der Zündspulen und Nockenwellen liegt der obere Ventiltrieb offen."},
+ {name:"3 · Zylinderkopf",remove:["head"],unlock:["block","pistons","rods","crank"],message:"Der Zylinderkopf ist entfernt. Jetzt betrachten wir den Grundmotor und den Kurbeltrieb."},
+ {name:"4 · Kurbeltrieb",remove:["block"],unlock:["pistons","rods","crank","oilpan"],message:"Der Block ist ausgeblendet. Kolben, Pleuel und Kurbelwelle sind jetzt als eigene Lernobjekte zugänglich."},
+ {name:"5 · Einzelteile",remove:[],unlock:["pistons","rods","crank","oilpan"],message:"Einzelteile des Kurbeltriebs können jetzt nacheinander untersucht werden."}
 ];
-let decomp = false, step = 0;
+let active=false, current=0;
 
-function updateDecompUI(){
-  const btn=document.getElementById("decomposeBtn");
-  const engine=document.getElementById("engine");
-  document.getElementById("stepText").textContent=`Schritt ${step+1} von ${decompSteps.length}`;
-  if(!decomp){ btn.textContent="🔧 Zerlegungsmodus: AUS"; engine.classList.remove("decomp-active"); return; }
-  btn.textContent="🔧 Zerlegungsmodus: AN";
-  engine.classList.add("decomp-active");
-  const current=decompSteps[step];
-  document.querySelectorAll(".part").forEach(el=>{
-    el.classList.remove("hidden","locked","unlocked");
-    if(current.hide.includes(el.dataset.id)) el.classList.add("hidden");
-    else if(current.unlock.includes(el.dataset.id)) el.classList.add("unlocked");
-    else if(!["intake","exhaust","cooling","fuel","electric"].includes(el.dataset.id)) el.classList.add("locked");
-  });
-  document.getElementById("hint").textContent=current.text+" Klicke auf eine freigelegte Komponente, um ihre Erklärung zu sehen.";
-  document.getElementById("engineLabel").textContent=current.name;
+function render(d, extra=""){
+ document.getElementById("panel").innerHTML=`<span class="badge">${d.tag}</span><h2>${d.title}</h2><p>${d.text}</p>${d.why?`<h3>Warum ist das wichtig?</h3><p>${d.why}</p>`:""}${d.links?`<h3>Zusammenhang</h3><ul>${d.links.map(x=>`<li>${x}</li>`).join("")}</ul>`:""}${extra}`;
 }
-function toggleDecompose(){
-  decomp=!decomp;
-  step=0;
-  updateDecompUI();
-  if(decomp) render({title:"Zerlegungsmodus",tag:"Interaktiv",text:"Du kannst den Motor jetzt schrittweise zerlegen. Nach jedem Schritt werden darunterliegende Baugruppen sichtbar und anklickbar.",why:"So wird später aus der Übersicht ein echtes Lernmodell: erst Orientierung, dann Baugruppe, dann Einzelteil."});
-  else { resetEngine(); showOverview(); }
+function update(){
+ document.getElementById("step").textContent=active?steps[current].name:"Übersicht";
+ document.getElementById("modeBtn").textContent=active?"🔧 Zerlegung aktiv":"🔧 Zerlegung starten";
+ document.getElementById("modeBtn").classList.toggle("active",active);
+ document.querySelectorAll(".layer").forEach(el=>{
+   el.classList.remove("removed","locked","unlocked");
+   if(active){
+     const s=steps[current];
+     if(s.remove.includes(el.dataset.id)) el.classList.add("removed");
+     else if(s.unlock.includes(el.dataset.id)) el.classList.add("unlocked");
+     else el.classList.add("locked");
+   }
+ });
+ if(active){
+   render({title:steps[current].name,tag:"Zerlegungsmodus",text:steps[current].message,why:"Klicke auf die freigegebenen Bauteile. Mit „Weiter“ gehst du zur nächsten Zerlegungsstufe."});
+ }
 }
-function advanceDecomp(){
-  if(!decomp) return;
-  if(step<decompSteps.length-1){ step++; updateDecompUI(); }
-}
-function resetEngine(){
-  decomp=false; step=0;
-  document.querySelectorAll(".part").forEach(el=>el.classList.remove("hidden","locked","unlocked"));
-  document.getElementById("engineLabel").textContent="Klicke auf eine Hauptkomponente";
-  document.getElementById("hint").textContent="Zerlegungsmodus: Schalte Baugruppen nacheinander aus, um tieferliegende Komponenten sichtbar zu machen.";
-  updateDecompUI();
-}
-function render(d){
-document.getElementById("panel").innerHTML=`<span class="tag">${d.tag}</span><h2>${d.title}</h2><p>${d.text}</p>${d.why?`<h3>Warum ist das wichtig?</h3><p>${d.why}</p>`:""}${d.links?`<h3>Zusammenhang</h3><ul>${d.links.map(x=>`<li>${x}</li>`).join("")}</ul>`:""}${d.items?`<h3>Lernbereiche</h3><ul>${d.items.map(x=>`<li>${x}</li>`).join("")}</ul>`:""}`;
-}
-function showOverview(){render(data.overview)}
-document.querySelectorAll(".part").forEach(el=>{
-  const activate=()=>{
-    if(decomp){
-      const current=decompSteps[step];
-      if(current.hide.includes(el.dataset.id)){ render(data[el.dataset.id]); advanceDecomp(); return; }
-      if(current.unlock.includes(el.dataset.id)){ render(data[el.dataset.id]); return; }
-    }
-    render(data[el.dataset.id]);
-  };
-  el.addEventListener("click",activate);
-  el.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();activate()}});
+function toggleMode(){active=!active;current=0;update();if(!active)render(parts.overview)}
+function nextStep(){if(!active){active=true;current=0}else if(current<steps.length-1)current++;update()}
+function prevStep(){if(!active)return;if(current>0)current--;update()}
+function resetAll(){active=false;current=0;update();render(parts.overview)}
+
+document.querySelectorAll(".layer").forEach(el=>{
+ const act=()=>{render(parts[el.dataset.id]); if(active && steps[current].remove.includes(el.dataset.id)) nextStep()};
+ el.addEventListener("click",act);
+ el.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();act()}});
 });
-showOverview();
+render(parts.overview);
 </script>
 </body>
 </html>
