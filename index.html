@@ -4,271 +4,232 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
 <meta name="theme-color" content="#0b0f13">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="M50B25 Explorer">
-<title>M50B25 Explorer · E34 525i</title>
+<title>M50B25 3D Explorer</title>
 <style>
-:root{--bg:#0a0e12;--panel:#151a20;--line:#303840;--text:#edf2f5;--muted:#99a5ae;--blue:#76bfdc;--metal:#68727a}
+:root{--bg:#080c10;--panel:#131920;--line:#2e3941;--text:#edf2f5;--muted:#96a3ac;--accent:#6ec0df}
 *{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif}
-body{min-height:100svh}button{font:inherit;color:inherit;touch-action:manipulation;-webkit-tap-highlight-color:transparent;cursor:pointer}
-header{padding:calc(13px + env(safe-area-inset-top)) 16px 13px;background:#10151a;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:12px;align-items:center}
-h1{font-size:20px;margin:0}.sub{font-size:12px;color:var(--muted);margin-top:3px}
-.top{background:#222a31;border:1px solid #3b464e;border-radius:9px;padding:9px 12px}
-.app{display:grid;grid-template-columns:minmax(0,1fr) 375px;min-height:calc(100svh - 72px)}
-.viewer{position:relative;overflow:hidden;display:flex;justify-content:center;align-items:center;padding:72px 16px 32px;background:radial-gradient(circle at 50% 45%,#303940 0,#171d23 48%,#080b0e 100%)}
-.toolbar{position:absolute;top:12px;left:12px;right:12px;z-index:80;display:flex;gap:7px;flex-wrap:wrap;align-items:center}
-.toolbar button{background:#20272e;border:1px solid #3c474f;border-radius:8px;padding:8px 10px;font-size:12px}
-.toolbar button.active{background:#294b5a;border-color:#78bdd7}.step{margin-left:auto;color:#aeb8c0;font-size:12px}
-.scene{position:relative;width:min(1000px,98%);aspect-ratio:1.42;filter:drop-shadow(0 24px 25px #000b)}
-.bay{position:absolute;inset:0;border-radius:28px;background:linear-gradient(135deg,#20272b,#11161a);border:2px solid #465057;box-shadow:inset 0 0 0 9px #0a0d10}
-.strut{position:absolute;width:19%;height:17%;border-radius:50%;background:radial-gradient(circle,#232a2f 0 28%,#8c959b 29% 32%,#31383d 33% 63%,#0e1215 64%);border:2px solid #4f595f;opacity:.9}
-.strut.l{left:3%;top:7%}.strut.r{right:3%;top:7%}
-.firewall{position:absolute;left:22%;right:22%;top:2%;height:18%;background:linear-gradient(#2c3338,#161b1f);border-bottom:2px solid #596269;border-radius:8px}
-.engineBody{position:absolute;left:26%;top:12%;width:49%;height:78%;transform:perspective(900px) rotateX(10deg) rotateZ(-1deg)}
-.layer{position:absolute;cursor:pointer;transition:.35s ease;outline:none}.layer:hover,.layer:focus{filter:brightness(1.17);z-index:90}
-.layer.removed{opacity:0;pointer-events:none;transform:translateY(-75px) scale(.94)!important}
-.layer.locked{opacity:.14;pointer-events:none;filter:grayscale(.8)}
-.layer.unlocked{filter:drop-shadow(0 0 9px #78bdd766)}
-/* E34/M50-specific outer components */
-.valve{left:15%;top:2%;width:70%;height:17%;border-radius:8px;background:linear-gradient(90deg,#252c31,#4b555c 22%,#20262b 48%,#4d565d 78%,#232a2f);border:3px solid #69747b;box-shadow:inset 0 0 0 2px #14191d}
-.valve:after{content:"";position:absolute;left:7%;right:7%;top:38%;height:12%;background:repeating-linear-gradient(90deg,#879096 0 3px,transparent 3px 13px);opacity:.55}
-.oilcap{position:absolute;right:5%;top:22%;width:13%;height:26%;border-radius:50%;background:#252c30;border:3px solid #737e85}
-.oilcap:after{content:"OIL";position:absolute;inset:30% 20%;font-size:8px;color:#9ba6ac;display:grid;place-items:center}
-.coils{left:22%;top:17%;width:56%;height:11%;display:flex;gap:2%;padding:3px}
-.coil{flex:1;border-radius:4px;background:linear-gradient(#20262b,#080b0e);border:2px solid #5c666d}
-.head{left:12%;top:26%;width:76%;height:14%;border-radius:7px;background:linear-gradient(#9ba3a8,#5e686f);border:3px solid #c0c6c9;box-shadow:inset 0 -6px #40484e}
-.intake{left:7%;top:39%;width:61%;height:30%;border-radius:18px 13px 13px 18px;background:linear-gradient(145deg,#20272c,#0d1216);border:3px solid #48535a;box-shadow:inset 0 0 0 3px #30383d}
-.runners{position:absolute;left:10%;right:6%;top:18%;height:58%;display:flex;gap:3%;align-items:center}
-.runner{flex:1;height:90%;border-radius:48% 48% 18% 18%;background:linear-gradient(90deg,#4a555b,#161c20 42%,#39434a);border:2px solid #606b72;box-shadow:inset -5px 0 #11161a}
-.throttle{left:-2%;top:50%;width:13%;height:18%;border-radius:50%;background:#aab0b3;border:4px solid #555f65;z-index:5}
-.intakePipe{left:-16%;top:61%;width:28%;height:9%;border-radius:30px;background:#262d32;border:3px solid #4d575d;transform:rotate(10deg)}
-.airbox{left:-30%;top:58%;width:25%;height:25%;border-radius:6px;background:linear-gradient(#252d32,#11161a);border:3px solid #4e5960}
-.airbox:after{content:"";position:absolute;inset:8px;border:1px solid #69747a;border-radius:3px}
-.exhaust{left:8%;top:69%;width:47%;height:20%;display:flex;gap:2%;padding:4px;transform:rotate(-2deg)}
-.headerPipe{flex:1;border-radius:50%;background:linear-gradient(90deg,#3e464a,#171b1e,#596166);border:2px solid #697279}
-.block{left:17%;top:66%;width:67%;height:26%;border-radius:10px;background:linear-gradient(145deg,#70797f,#343b40);border:3px solid #8e989e;box-shadow:inset 0 0 0 7px #292f34}
-.oilpan{left:20%;top:88%;width:60%;height:12%;border-radius:8px 8px 22px 22px;background:linear-gradient(#4b545a,#171b1f);border:3px solid #68737a}
-.waterpump{right:-7%;top:72%;width:15%;height:16%;border-radius:50%;background:radial-gradient(circle,#69747a 0 25%,#20272c 27% 55%,#7a858b 56% 60%,#242b30 61%);border:3px solid #879197}
-.belt{right:-10%;top:45%;width:9%;height:38%;border:7px solid #14191c;border-radius:50%;transform:rotate(-8deg)}
-.dipstick{right:12%;top:45%;width:3%;height:23%;background:#c84f2e;border-radius:4px;transform:rotate(-7deg);z-index:6}
-.battery{position:absolute;right:4%;bottom:7%;width:18%;height:18%;background:#151a1e;border:3px solid #465057;border-radius:6px}
-.battery:after{content:"+";position:absolute;right:10%;top:8%;color:#d75b46;font-weight:bold}
-.motion{position:absolute;inset:0;pointer-events:none;z-index:50}.motion.hidden{display:none}
-.motion .p{position:absolute;width:5%;height:7%;border-radius:45% 45% 15% 15%;background:linear-gradient(90deg,#d0d5d7,#646e75);border:2px solid #eef0f1;transform:translate(-50%,-50%);pointer-events:auto}
-.motion .r{position:absolute;width:1.7%;background:#89939a;border:2px solid #c6cbce;border-radius:50%;transform-origin:50% 4%;pointer-events:auto}
-.motion .cw{position:absolute;left:50%;top:82%;width:54%;height:10%;border:7px solid #c6cbce;border-radius:50%;transform:translate(-50%,-50%);pointer-events:auto}
-.motion .hub{position:absolute;left:50%;top:82%;width:4%;height:4%;border-radius:50%;background:#e0e3e5;border:2px solid #68737a;transform:translate(-50%,-50%);pointer-events:auto}
-.hint{position:absolute;bottom:10px;left:14px;color:#7f8b94;font-size:10px}
-.panel{background:var(--panel);border-left:1px solid var(--line);padding:22px;overflow:auto}
-.badge{display:inline-block;padding:5px 9px;border-radius:99px;background:#263039;border:1px solid #3a4851;color:#b8dcea;font-size:11px;margin-bottom:10px}
-.panel h2{margin:0 0 8px;font-size:24px}.panel p{color:#c8d0d6;line-height:1.56}.panel h3{margin:22px 0 8px;font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:#89959e}.panel ul{margin:0;padding-left:20px;color:#c7cfd5;line-height:1.65}
-.fact{background:#10151a;border:1px solid #303b43;border-radius:9px;padding:11px 12px;font-size:12px;color:#c8d1d7;margin-top:13px}
-.next{width:100%;padding:12px;margin-top:14px;background:#285365;border:1px solid #70b9d5;border-radius:9px}
-@media(max-width:850px){.app{display:block}.viewer{min-height:59svh}.panel{border-left:0;border-top:1px solid var(--line);min-height:41svh}.step{width:100%;margin-left:0}.scene{width:100%}}
-@media(max-width:600px){.viewer{padding:82px 5px 24px}.toolbar button{padding:8px 9px}.panel{padding:18px}.panel h2{font-size:22px}}
-
-.engineSVG{width:100%;height:100%;display:block;filter:drop-shadow(0 22px 24px #0009)}
-.svgPart{cursor:pointer;transition:filter .22s,opacity .35s,transform .35s;transform-box:fill-box;transform-origin:center}
-.svgPart:hover{filter:brightness(1.18) drop-shadow(0 0 7px #8acbe266)}
-.svgPart.removed{opacity:0;pointer-events:none;transform:translateY(-80px) scale(.95)}
-.svgPart.locked{opacity:.12;pointer-events:none;filter:grayscale(1)}
-.svgPart.unlocked{filter:drop-shadow(0 0 8px #78bdd755)}
+body{min-height:100svh;overflow-x:hidden}button{font:inherit;color:inherit;border:0;cursor:pointer}
+header{padding:calc(12px + env(safe-area-inset-top)) 15px 12px;background:#10161b;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:10px}
+h1{font-size:19px;margin:0}.sub{font-size:11px;color:var(--muted);margin-top:3px}.reset{padding:9px 12px;background:#232c33;border:1px solid #3a474f;border-radius:9px}
+.app{display:grid;grid-template-columns:minmax(0,1fr) 350px;min-height:calc(100svh - 70px)}
+.viewer{position:relative;min-height:650px;overflow:hidden;background:radial-gradient(circle at 50% 43%,#2b343b 0,#151b21 45%,#070a0d 100%);touch-action:none}
+#canvas{width:100%;height:100%;display:block}
+.hud{position:absolute;z-index:5;top:12px;left:12px;right:12px;display:flex;gap:7px;flex-wrap:wrap;pointer-events:none}
+.hud>*{pointer-events:auto}
+.tool{padding:9px 11px;border-radius:9px;background:#1c252cdd;border:1px solid #43505a;font-size:12px;backdrop-filter:blur(8px)}
+.tool.active{background:#285264;border-color:#75c3df}
+.status{margin-left:auto;padding:9px 11px;background:#0d1217cc;border:1px solid #35414a;border-radius:9px;font-size:12px;color:#b9c4ca}
+.help{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);white-space:nowrap;color:#9ba7ae;font-size:11px;background:#090d11bb;padding:7px 10px;border-radius:8px;border:1px solid #273138}
+.panel{background:var(--panel);border-left:1px solid var(--line);padding:20px;overflow:auto}.badge{display:inline-block;padding:5px 9px;background:#263943;border:1px solid #3d5864;border-radius:99px;font-size:11px;color:#bce2ef}
+.panel h2{font-size:23px;margin:9px 0 7px}.panel p{color:#c7d0d6;line-height:1.55}.panel h3{font-size:11px;color:#8e9ba3;text-transform:uppercase;letter-spacing:.08em;margin:20px 0 8px}.panel ul{padding-left:19px;line-height:1.65;color:#c7d0d6}.fact{padding:11px 12px;background:#0d1318;border:1px solid #303c44;border-radius:9px;font-size:12px;line-height:1.5}.primary{width:100%;margin-top:13px;padding:12px;background:#2b596b;border:1px solid #70bdd9;border-radius:9px}.secondary{width:100%;margin-top:8px;padding:11px;background:#222b32;border:1px solid #3b474f;border-radius:9px}
+@media(max-width:850px){.app{display:block}.viewer{height:64svh;min-height:430px}.panel{border-left:0;border-top:1px solid var(--line);min-height:36svh}}
+@media(max-width:600px){.viewer{height:61svh;min-height:400px}.help{font-size:10px}.status{margin-left:0;width:100%;order:10}}
 </style>
 </head>
 <body>
 <header>
-<div><h1>M50B25 Explorer</h1><div class="sub">BMW E34 525i · M50B25 · originalgetreue Lernansicht</div></div>
-<button class="top" onclick="resetAll()">↺ Reset</button>
+<div><h1>M50B25 · 3D Explorer</h1><div class="sub">BMW E34 525i · interaktives Lernmodell · iPhone/iPad</div></div>
+<button class="reset" onclick="resetView()">↺ Ansicht</button>
 </header>
 <div class="app">
-<section class="viewer">
-<div class="toolbar">
-<button id="modeBtn" onclick="toggleMode()">🔧 Zerlegung starten</button>
-<button onclick="prevStep()">← Zurück</button><button onclick="nextStep()">Weiter →</button>
-<div class="step" id="step">Außenansicht</div>
+<section class="viewer" id="viewer">
+<div class="hud">
+<button class="tool" id="autoBtn" onclick="toggleAuto()">⟳ Auto-Drehung</button>
+<button class="tool" onclick="viewFront()">Front</button>
+<button class="tool" onclick="viewTop()">Oben</button>
+<button class="tool" onclick="viewSide()">Seite</button>
+<div class="status" id="status">M50B25 · Außenansicht</div>
 </div>
-
-<div class="scene">
-<svg class="engineSVG" viewBox="0 0 1000 700" role="img" aria-label="Schematische realistischere Darstellung eines BMW M50B25">
-<defs>
- <linearGradient id="al" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#c8cdd0"/><stop offset=".35" stop-color="#737d82"/><stop offset=".7" stop-color="#414a4f"/><stop offset="1" stop-color="#aab1b4"/></linearGradient>
- <linearGradient id="darkal" x1="0" x2="0" y1="0" y2="1"><stop stop-color="#778187"/><stop offset=".45" stop-color="#343c41"/><stop offset="1" stop-color="#171c20"/></linearGradient>
- <linearGradient id="black" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#343c42"/><stop offset=".5" stop-color="#0c1115"/><stop offset="1" stop-color="#252d32"/></linearGradient>
- <linearGradient id="rubber" x1="0" x2="1"><stop stop-color="#3a4247"/><stop offset=".5" stop-color="#101418"/><stop offset="1" stop-color="#2b3338"/></linearGradient>
- <radialGradient id="pulley"><stop stop-color="#8e979c"/><stop offset=".45" stop-color="#3a4247"/><stop offset=".7" stop-color="#111518"/><stop offset=".72" stop-color="#8b9498"/><stop offset="1" stop-color="#272e33"/></radialGradient>
- <filter id="shadow"><feDropShadow dx="0" dy="10" stdDeviation="12" flood-opacity=".5"/></filter>
- <pattern id="ribs" width="18" height="18" patternUnits="userSpaceOnUse"><rect width="18" height="18" fill="#20272b"/><rect x="2" width="4" height="18" fill="#515b60"/><rect x="8" width="3" height="18" fill="#12171a"/></pattern>
-</defs>
-<rect x="0" y="0" width="1000" height="700" rx="28" fill="#11171b"/>
-<path d="M90 105 Q500 55 910 105 L950 610 Q500 655 50 610Z" fill="#1c2328" stroke="#4b555b" stroke-width="5"/>
-<ellipse cx="170" cy="145" rx="105" ry="75" fill="url(#black)" stroke="#6b767c" stroke-width="5"/>
-<ellipse cx="830" cy="145" rx="105" ry="75" fill="url(#black)" stroke="#6b767c" stroke-width="5"/>
-
-<!-- firewall -->
-<path d="M205 95 Q500 55 795 95 L770 165 Q500 140 230 165Z" fill="url(#darkal)" stroke="#8b959a" stroke-width="3"/>
-
-<!-- cylinder head -->
-<g id="svg-head" class="svgPart" data-id="head">
- <path d="M270 165 L730 165 L775 255 L735 325 L265 325 L225 255Z" fill="url(#al)" stroke="#c3c9cc" stroke-width="5" filter="url(#shadow)"/>
- <path d="M270 205 L730 205" stroke="#30383d" stroke-width="12"/>
- <path d="M290 240 Q500 205 710 240 L690 295 Q500 320 310 295Z" fill="#252c31" stroke="#707a80" stroke-width="4"/>
- <!-- cam covers -->
- <ellipse cx="390" cy="260" rx="105" ry="24" fill="#8c969b" opacity=".65"/>
- <ellipse cx="610" cy="260" rx="105" ry="24" fill="#8c969b" opacity=".65"/>
-</g>
-
-<!-- valve cover -->
-<g id="svg-valve" class="svgPart" data-id="valve">
- <path d="M275 105 Q500 70 725 105 L755 185 Q500 160 245 185Z" fill="url(#black)" stroke="#8a959b" stroke-width="5" filter="url(#shadow)"/>
- <path d="M300 130 Q500 105 700 130" stroke="#59646a" stroke-width="4"/>
- <g fill="#11171b" stroke="#707b81" stroke-width="2">
-  <circle cx="350" cy="138" r="15"/><circle cx="410" cy="130" r="15"/><circle cx="470" cy="124" r="15"/>
-  <circle cx="530" cy="124" r="15"/><circle cx="590" cy="130" r="15"/><circle cx="650" cy="138" r="15"/>
- </g>
- <text x="500" y="154" text-anchor="middle" font-size="24" font-weight="700" fill="#c9ced0" letter-spacing="4">BMW</text>
-</g>
-
-<!-- ignition coils -->
-<g id="svg-coils" class="svgPart" data-id="coils">
- <g fill="url(#black)" stroke="#818b90" stroke-width="3">
-  <rect x="315" y="178" width="42" height="75" rx="6"/><rect x="378" y="172" width="42" height="75" rx="6"/>
-  <rect x="441" y="168" width="42" height="75" rx="6"/><rect x="504" y="168" width="42" height="75" rx="6"/>
-  <rect x="567" y="172" width="42" height="75" rx="6"/><rect x="630" y="178" width="42" height="75" rx="6"/>
- </g>
-</g>
-
-<!-- intake manifold -->
-<g id="svg-intake" class="svgPart" data-id="intake">
- <path d="M110 285 L280 285 Q330 300 360 330 L360 405 L290 425 L150 405Z" fill="url(#black)" stroke="#657077" stroke-width="5" filter="url(#shadow)"/>
- <g fill="url(#ribs)" stroke="#59646a" stroke-width="3">
-  <path d="M175 315 Q225 295 275 325 L305 395 L260 405Z"/>
-  <path d="M205 310 Q260 295 305 330 L335 395 L292 405Z"/>
-  <path d="M235 310 Q290 300 335 335 L360 390 L322 405Z"/>
-  <path d="M265 315 Q320 305 365 340 L385 385 L350 405Z"/>
-  <path d="M295 320 Q350 315 395 350 L410 380 L380 405Z"/>
-  <path d="M325 325 Q380 325 420 360 L435 382 L405 405Z"/>
- </g>
-</g>
-
-<!-- throttle + intake pipe -->
-<g id="svg-throttle" class="svgPart" data-id="throttle">
- <circle cx="105" cy="350" r="42" fill="url(#pulley)" stroke="#aab1b5" stroke-width="5"/>
- <circle cx="105" cy="350" r="24" fill="#1a2024" stroke="#6b757a" stroke-width="3"/>
- <path d="M75 350 L135 350" stroke="#a7afb2" stroke-width="7"/>
-</g>
-<path id="svg-pipe" class="svgPart" data-id="intakePipe" d="M45 350 C55 430 100 475 190 470" fill="none" stroke="url(#rubber)" stroke-width="48" stroke-linecap="round"/>
-<path d="M30 470 L165 455 L185 565 L40 575Z" fill="url(#black)" stroke="#657077" stroke-width="5" class="svgPart" data-id="airbox"/>
-<rect x="58" y="485" width="95" height="55" rx="5" fill="url(#ribs)" opacity=".9"/>
-
-<!-- block -->
-<g id="svg-block" class="svgPart" data-id="block">
- <path d="M300 320 L720 320 L770 560 L700 625 L300 625 L230 560Z" fill="url(#darkal)" stroke="#9ca5aa" stroke-width="6" filter="url(#shadow)"/>
- <g fill="#252b2f" stroke="#a3abb0" stroke-width="4">
-  <ellipse cx="340" cy="430" rx="43" ry="105"/><ellipse cx="405" cy="430" rx="43" ry="105"/><ellipse cx="470" cy="430" rx="43" ry="105"/>
-  <ellipse cx="535" cy="430" rx="43" ry="105"/><ellipse cx="600" cy="430" rx="43" ry="105"/><ellipse cx="665" cy="430" rx="43" ry="105"/>
- </g>
- <g fill="none" stroke="#c0c6c9" stroke-width="3" opacity=".7">
-  <path d="M280 365 L720 365"/><path d="M275 495 L725 495"/><path d="M290 545 L710 545"/>
- </g>
-</g>
-
-<!-- exhaust manifold -->
-<g id="svg-exhaust" class="svgPart" data-id="exhaust">
- <g fill="none" stroke="url(#al)" stroke-width="25" stroke-linecap="round">
-  <path d="M735 275 C800 285 815 315 800 345"/>
-  <path d="M750 295 C840 310 850 350 820 385"/>
-  <path d="M750 315 C875 340 875 390 835 425"/>
-  <path d="M750 335 C900 375 895 425 845 465"/>
-  <path d="M745 355 C905 410 900 460 850 500"/>
-  <path d="M740 375 C900 445 890 495 845 530"/>
- </g>
- <path d="M800 345 L900 345 L900 520 L850 550" fill="none" stroke="#59636a" stroke-width="30"/>
-</g>
-
-<!-- oil pan -->
-<g id="svg-oilpan" class="svgPart" data-id="oilpan">
- <path d="M260 585 L740 585 L790 625 L760 665 L240 665 L210 625Z" fill="url(#black)" stroke="#7c878d" stroke-width="5"/>
- <path d="M270 620 L730 620" stroke="#414a4f" stroke-width="5"/>
-</g>
-
-<!-- front accessories -->
-<g id="svg-waterpump" class="svgPart" data-id="waterpump">
- <circle cx="820" cy="555" r="67" fill="url(#pulley)" stroke="#a0a8ac" stroke-width="5"/>
- <circle cx="820" cy="555" r="17" fill="#20262a"/>
- <g stroke="#bbc1c4" stroke-width="7"><path d="M820 490 L820 620"/><path d="M755 555 L885 555"/></g>
-</g>
-<path id="svg-belt" class="svgPart" data-id="belt" d="M820 420 C910 420 930 500 900 570 C875 630 790 650 755 590" fill="none" stroke="#11161a" stroke-width="25"/>
-
-<!-- crank hint -->
-<g id="svg-crank" class="svgPart" data-id="crank" opacity=".75">
- <path d="M315 555 Q500 620 685 555" fill="none" stroke="#c7cccf" stroke-width="12"/>
- <circle cx="500" cy="590" r="22" fill="#e0e3e5" stroke="#59646a" stroke-width="4"/>
-</g>
-</svg>
-<div class="motion hidden" id="motion">
- <div class="cw" id="cw"></div><div class="hub" id="hub"></div>
- <span class="p" data-c="1"></span><span class="p" data-c="2"></span><span class="p" data-c="3"></span><span class="p" data-c="4"></span><span class="p" data-c="5"></span><span class="p" data-c="6"></span>
- <span class="r" data-c="1"></span><span class="r" data-c="2"></span><span class="r" data-c="3"></span><span class="r" data-c="4"></span><span class="r" data-c="5"></span><span class="r" data-c="6"></span>
-</div>
-<div class="hint">Realistischere SVG-Baugruppen · E34/M50B25-orientiert · Bauteile anklicken</div>Schematische, aber am E34-M50B25-Aufbau orientierte 3D-ähnliche Darstellung.</div>
-</div>
+<canvas id="canvas"></canvas>
+<div class="help">Finger ziehen = drehen · zwei Finger = zoomen · Bauteil antippen = auswählen</div>
 </section>
 <aside class="panel" id="panel"></aside>
 </div>
 <script>
+const canvas=document.getElementById("canvas"),ctx=canvas.getContext("2d"),viewer=document.getElementById("viewer");
+let W=0,H=0,dpr=1,rx=-.16,ry=-.55,zoom=1,auto=false,drag=false,lastX=0,lastY=0,pinch=0,selected="overview";
 const parts={
-valve:{title:"Ventildeckel",tag:"M50B25 · oben",text:"Der charakteristische M50-Ventildeckel sitzt längs über dem Zylinderkopf. Darunter befinden sich die beiden obenliegenden Nockenwellen und der Ventiltrieb.",why:"Beim Zerlegen wird er zuerst abgenommen, damit der Ventiltrieb sichtbar wird.",links:["Zündspulen","Nockenwellen","Zylinderkopf","Dichtfläche"]},
-oilcap:{title:"Öleinfülldeckel",tag:"Schmierung",text:"Über den Öleinfülldeckel wird Motoröl in den Motor eingefüllt. Er sitzt auf dem Ventildeckel.",why:"Das Öl gelangt in den Schmierkreislauf und versorgt Lager, Nockenwellen und weitere Reibstellen.",links:["Motoröl","Ventildeckel","Ölwanne"]},
-coils:{title:"6 Zündspulen",tag:"Zündung",text:"Der M50 verwendet eine Einzelzündspule pro Zylinder. Die Spulen sitzen oben am Zylinderkopf unter dem Ventildeckelbereich.",why:"Jeder Zylinder benötigt zum richtigen Zeitpunkt einen Zündfunken.",links:["Zündkerzen","Motorsteuergerät","Kurbelwellensignal"]},
-head:{title:"Zylinderkopf",tag:"24 Ventile · DOHC",text:"Der M50B25 ist ein Reihensechszylinder mit 24 Ventilen und zwei obenliegenden Nockenwellen. Der Zylinderkopf bildet die Brennräume und führt den Gaswechsel.",why:"Ein- und Auslassventile bestimmen, wann Frischgas einströmt und Abgas austritt.",links:["Einlassseite","Auslassseite","Nockenwellen","Ventile"]},
-intake:{title:"Ansaugkrümmer",tag:"6 Ansaugkanäle",text:"Der schwarze Ansaugkrümmer des E34-M50B25 besitzt sechs einzelne Läufe zu den Zylindern. Seine Form beeinflusst die Strömung und damit das Drehmomentverhalten.",why:"Jeder Zylinder braucht einen definierten Weg für die Frischluft.",links:["Drosselklappe","Luftmengenmesser","Luftfilterkasten","Einspritzventile"]},
-throttle:{title:"Drosselklappe",tag:"Laststeuerung",text:"Die Drosselklappe sitzt am Eingang des Ansaugtrakts und steuert die vom Motor angesaugte Luftmenge.",why:"Beim Ottomotor wird die Last im klassischen System wesentlich über die Drosselung der Ansaugluft bestimmt.",links:["Ansaugschlauch","Leerlaufregelung","Ansaugkrümmer"]},
-intakePipe:{title:"Ansaugschlauch",tag:"Luftführung",text:"Der geformte Ansaugschlauch verbindet die Luftführung mit der Drosselklappe.",why:"Er muss die benötigte Luft möglichst verlustarm und dicht zur Drosselklappe führen.",links:["Luftfilterkasten","Drosselklappe","Luftmengenmesser"]},
-airbox:{title:"Luftfilterkasten",tag:"Ansaugluft",text:"Der E34 besitzt einen separaten Luftfilterkasten im Motorraum. Er filtert die angesaugte Luft, bevor sie zum Motor gelangt.",why:"Staub und Partikel würden Zylinderlaufbahnen und andere Bauteile stark verschleißen lassen.",links:["Luftfilter","Luftmengenmesser","Ansaugschlauch"]},
-exhaust:{title:"Abgaskrümmer",tag:"6 Zylinder",text:"Auf der gegenüberliegenden Seite des Zylinderkopfs führen Abgaskanäle die Verbrennungsgase aus den sechs Zylindern zusammen. Der E34-M50 hat getrennte vordere und hintere Abgaskrümmer-Baugruppen.",why:"Der Abgasstrom muss aus den Zylindern abgeführt werden, bevor der nächste Ansaugtakt beginnt.",links:["Auslassventile","Katalysator","Abgasanlage"]},
-block:{title:"Zylinderblock",tag:"Reihensechszylinder",text:"Der M50B25 hat sechs in Reihe angeordnete Zylinder. Der Block nimmt Zylinderlaufbahnen, Kurbelwelle und Hauptlager auf.",why:"Er ist das tragende Zentrum des Grundmotors und muss hohe Verbrennungs- und Lagerkräfte aufnehmen.",links:["Kolben","Pleuel","Kurbelwelle","Hauptlager"]},
-oilpan:{title:"Ölwanne",tag:"Schmierkreislauf",text:"Die Ölwanne bildet den unteren Ölvorrat des Motors. Die Ölpumpe saugt von dort Öl an und verteilt es im Schmierkreislauf.",why:"Ohne stabile Ölversorgung würden Lager und andere hoch belastete Gleitflächen sehr schnell Schaden nehmen.",links:["Ölpumpe","Ölsieb","Kurbelwelle","Ölfilter"]},
-waterpump:{title:"Wasserpumpe",tag:"Kühlung",text:"Die Wasserpumpe zirkuliert das Kühlmittel durch den Motor und weiter zum Kühler.",why:"Der M50 muss die bei der Verbrennung entstehende Wärme kontrolliert abführen.",links:["Thermostat","Kühler","Kühlmittelkanäle"]},
-belt:{title:"Nebenaggregateriemen",tag:"Antrieb",text:"Der Riemen treibt Nebenaggregate des Motors an. Die genaue Ausstattung kann je nach Baujahr und Fahrzeugausführung variieren.",why:"Die Kurbelwelle liefert über den Riemenantrieb mechanische Leistung an die Nebenaggregate.",links:["Kurbelwellenriemenscheibe","Wasserpumpe","Generator"]},
-dipstick:{title:"Ölmessstab",tag:"Kontrolle",text:"Mit dem Ölmessstab wird der Motorölstand kontrolliert.",why:"Der Ölstand muss innerhalb des vorgesehenen Bereichs liegen, damit die Ölpumpe zuverlässig versorgt wird.",links:["Ölwanne","Motoröl","Ölpumpe"]},
-piston:{title:"Kolben",tag:"Kurbeltrieb",text:"Sechs Kolben bewegen sich in den sechs Zylindern. Sie nehmen den Verbrennungsdruck auf und übertragen ihn über die Pleuel auf die Kurbelwelle.",why:"Die Kolbenbewegung ist die direkte Folge des Verbrennungsdrucks und der Kurbelwellenbewegung.",links:["Kolbenringe","Pleuel","Zylinderlaufbahn"]},
-rod:{title:"Pleuel",tag:"Kraftübertragung",text:"Jedes Pleuel verbindet einen Kolben mit einem Kurbelzapfen. Es überträgt Zug- und Druckkräfte zwischen Kolben und Kurbelwelle.",why:"Das Pleuel ermöglicht die Umwandlung der linearen Kolbenbewegung in die Drehbewegung der Kurbelwelle.",links:["Kolbenbolzen","Pleuellager","Kurbelzapfen"]},
-crank:{title:"Kurbelwelle",tag:"Kraftumwandlung",text:"Die Kurbelwelle wandelt die Hubbewegung der sechs Kolben in Drehbewegung um. Sie ist im Block über Hauptlager gelagert.",why:"Die Drehbewegung der Kurbelwelle ist die mechanische Leistung, die über Schwungrad und Kupplung zum Getriebe gelangt.",links:["Hauptlager","Pleuellager","Schwungrad","Ölpumpe"]},
-overview:{title:"M50B25 im E34",tag:"Originalgetreue Lernansicht",text:"Diese Version orientiert sich am Motorraum des BMW E34 525i und am charakteristischen M50B25-Aufbau: längs eingebauter Reihensechszylinder, schwarzer Ansaugkrümmer mit sechs Läufen, Einzelzündspulen, Ventildeckel, Luftfilterkasten und Nebenaggregate.",why:"Für das Lernen ist die Lage entscheidend. Deshalb bleiben die Bauteile bewusst in ihrer typischen Einbaulage, bevor wir sie in der Zerlegung auseinanderziehen.",links:["Ventildeckel","Zylinderkopf","Ansaugkrümmer","Abgaskrümmer","Zylinderblock","Kurbeltrieb"]}
+overview:{tag:"M50B25 · 3D",title:"BMW M50B25",text:"Erste drehbare 3D-Lernansicht des M50B25 im E34. Die Darstellung ist bewusst modular aufgebaut: Zylinderblock, Zylinderkopf, Ventildeckel, Ansaugung, Abgasseite und Nebenaggregate sind getrennte Baugruppen.",why:"Diese Version ist das Fundament für die spätere echte Zerlegung. Jede Baugruppe kann anschließend eine eigene Position, Abhängigkeit und Ausbaubewegung bekommen.",links:["Zylinderblock","Zylinderkopf","Ventildeckel","Ansaugung","Abgaskrümmer","Kurbeltrieb"]},
+block:{tag:"Grundmotor",title:"Zylinderblock",text:"Der Block bildet das tragende Zentrum des Reihensechszylinders. Im Inneren sitzen sechs Zylinder, die Kurbelwelle und die Hauptlager.",why:"Der Block wird erst geöffnet bzw. zerlegt, wenn die darüberliegenden Baugruppen entfernt wurden.",links:["6 Zylinder","Kurbelwelle","Hauptlager","Ölversorgung"]},
+head:{tag:"Zylinderkopf",title:"Zylinderkopf",text:"Im Kopf befinden sich die Brennräume, Einlass- und Auslasskanäle sowie der Ventiltrieb. Der M50 besitzt zwei obenliegende Nockenwellen.",why:"Erst nach dem Entfernen des Ventildeckels und der erforderlichen Anbauteile wird der Ventiltrieb sichtbar.",links:["Einlassventile","Auslassventile","Nockenwellen","Ventilfedern"]},
+valve:{tag:"Abdeckung",title:"Ventildeckel",text:"Der Ventildeckel verschließt den oberen Bereich des Zylinderkopfs und hält das Öl im Ventiltrieb.",why:"Er ist eine der ersten Baugruppen, die bei einer Zerlegung entfernt werden.",links:["Zündspulen","Nockenwellen","Zylinderkopf"]},
+intake:{tag:"Ansaugung",title:"Ansaugkrümmer",text:"Der Ansaugkrümmer führt die Luft über sechs Läufe zu den einzelnen Zylindern.",why:"Die sechs Kanäle gehören zum charakteristischen Aufbau des Reihensechszylinders.",links:["Drosselklappe","Einspritzung","Luftführung"]},
+exhaust:{tag:"Abgas",title:"Abgaskrümmer",text:"Die Abgaskrümmer sammeln die Verbrennungsgase der sechs Zylinder und führen sie zur Abgasanlage.",why:"Erst wenn die Abgasseite frei zugänglich ist, lässt sich die Baugruppe sinnvoll ausbauen.",links:["Auslassventile","Katalysator","Abgasanlage"]},
+water:{tag:"Kühlung",title:"Wasserpumpe",text:"Die Wasserpumpe sorgt für die Zirkulation des Kühlmittels durch Motor und Kühlsystem.",why:"Sie sitzt im vorderen Nebenaggregatetrieb.",links:["Thermostat","Kühlmittel","Riemenantrieb"]},
+crank:{tag:"Kurbeltrieb",title:"Kurbelwelle",text:"Die Kurbelwelle wandelt die Hubbewegung der Kolben in Drehbewegung um.",why:"Im nächsten Entwicklungsstadium wird sie erst nach dem Entfernen der darüberliegenden bzw. verbundenen Baugruppen zugänglich.",links:["Pleuel","Kolben","Hauptlager","Ölpumpe"]}
 };
-const steps=[
-{name:"1 · Ventildeckel",remove:["valve"],unlock:["valve","oilcap","coils","head","intake","throttle","intakePipe","airbox","exhaust","block","oilpan","waterpump","belt","dipstick"],msg:"Ventildeckel und Öleinfülldeckel bilden die oberste Abdeckung. Entferne sie, um den Ventiltrieb zu untersuchen."},
-{name:"2 · Zündung & Kopf",remove:["coils","head"],unlock:["intake","throttle","intakePipe","airbox","exhaust","block","oilpan","waterpump","belt","dipstick"],msg:"Die Zündspulen sind entfernt; anschließend kann der Zylinderkopf als Baugruppe untersucht werden."},
-{name:"3 · Gaswechsel",remove:["intake","exhaust"],unlock:["block","oilpan","waterpump","belt","dipstick"],msg:"Ansaug- und Abgasseite sind weg. Der Grundmotor wird sichtbar."},
-{name:"4 · Grundmotor",remove:["block"],unlock:["piston","rod","crank","oilpan"],msg:"Der Zylinderblock ist als Hülle ausgeblendet. Jetzt lernen wir den Kurbeltrieb als einzelne Komponenten."},
-{name:"5 · Kurbeltrieb",remove:[],unlock:["piston","rod","crank","oilpan"],msg:"Kolben, Pleuel und Kurbelwelle sind jetzt einzelne bewegliche Lernobjekte."}
-];
-let active=false,stepIndex=0,motionOn=true,angle=0,last=0;
-function render(d,extra=""){
-document.getElementById("panel").innerHTML=`<span class="badge">${d.tag}</span><h2>${d.title}</h2><p>${d.text}</p><h3>Warum?</h3><p>${d.why}</p><h3>Zusammenhang</h3><ul>${d.links.map(x=>`<li>${x}</li>`).join("")}</ul>${extra}`;
-}
-function update(){
-document.getElementById("step").textContent=active?steps[stepIndex].name:"Außenansicht";
-document.getElementById("modeBtn").textContent=active?"🔧 Zerlegung aktiv":"🔧 Zerlegung starten";
-document.querySelectorAll(".svgPart").forEach(e=>{e.classList.remove("removed","locked","unlocked");if(active){let s=steps[stepIndex];if(s.remove.includes(e.dataset.id))e.classList.add("removed");else if(s.unlock.includes(e.dataset.id))e.classList.add("unlocked");else e.classList.add("locked")}});
-if(active)render({title:steps[stepIndex].name,tag:"Zerlegungsmodus",text:steps[stepIndex].msg,why:"Tippe auf freigegebene Komponenten. Mit „Weiter“ gehst du zur nächsten Zerlegungsstufe.",links:["Einbaulage","Funktion","mechanischer Zusammenhang"]});
-}
-function toggleMode(){active=!active;stepIndex=0;update();if(!active)render(parts.overview)}
-function nextStep(){if(!active)active=true;else if(stepIndex<steps.length-1)stepIndex++;update()}
-function prevStep(){if(active&&stepIndex>0)stepIndex--;update()}
-function resetAll(){active=false;stepIndex=0;update();render(parts.overview)}
-document.querySelectorAll(".svgPart").forEach(e=>{let f=()=>render(parts[e.dataset.id]||parts.overview);e.addEventListener("click",f);e.addEventListener("keydown",x=>{if(x.key==="Enter"||x.key===" "){x.preventDefault();f()}})});
+function renderPart(id){selected=id;let p=parts[id]||parts.overview;document.getElementById("status").textContent=p.title;document.getElementById("panel").innerHTML=`<span class="badge">${p.tag}</span><h2>${p.title}</h2><p>${p.text}</p><h3>Warum?</h3><p>${p.why}</p><h3>Zusammenhang</h3><ul>${p.links.map(x=>`<li>${x}</li>`).join("")}</ul>${id==="overview"?`<div class="fact"><b>Bedienung</b><br>Ziehe den Motor mit einem Finger. Auf dem iPad/iPhone kannst du mit zwei Fingern hinein- und herauszoomen. Tippe auf eine Baugruppe für Informationen.</div>`:`<button class="primary" onclick="showRemoval('${id}')">🔧 Ausbau vorbereiten</button>`}` }
+function showRemoval(id){let p=parts[id];document.getElementById("panel").innerHTML+=`<div class="fact" style="margin-top:10px"><b>Ausbau-Logik</b><br>Diese Baugruppe ist als eigener Teil vorbereitet. Die echte Reihenfolge wird im nächsten Schritt hinterlegt, sodass verborgene Bauteile erst nach dem Ausbau ihrer darüberliegenden Teile zugänglich werden.</div>`}
+function resize(){let r=viewer.getBoundingClientRect();dpr=Math.min(devicePixelRatio||1,2);W=r.width;H=r.height;canvas.width=W*dpr;canvas.height=H*dpr;canvas.style.width=W+"px";canvas.style.height=H+"px";ctx.setTransform(dpr,0,0,dpr,0,0)}
+window.addEventListener("resize",resize);resize();
 
-const motion=document.getElementById("motion"),ps=[...motion.querySelectorAll(".p")],rs=[...motion.querySelectorAll(".r")],cw=document.getElementById("cw");
-function layout(){let cx=50,cy=82, x0=32,gap=7.2,amp=9;ps.forEach((p,i)=>{let x=x0+i*gap,ph=[0,Math.PI,0,Math.PI,0,Math.PI][i],a=angle+ph,y=57+Math.cos(a)*amp;p.style.left=x+"%";p.style.top=y+"%";let dx=cx-x,dy=cy-y,len=Math.hypot(dx,dy),r=rs[i];r.style.left=x+"%";r.style.top=y+"%";r.style.height=len+"%";r.style.transform=`translate(-50%,0) rotate(${Math.atan2(dy,dx)*180/Math.PI+90}deg)`});cw.style.transform=`translate(-50%,-50%) rotate(${angle*180/Math.PI}deg)`}
-function loop(t){if(!last)last=t;let dt=Math.min(50,t-last);last=t;if(motionOn){angle+=dt*.0022;layout()}requestAnimationFrame(loop)}layout();requestAnimationFrame(loop);
-function showMotion(){motion.classList.remove("hidden");render({...parts.crank},`<div class="fact"><b>Bewegungsmodell</b><br>Die Kolben bewegen sich auf und ab, die Pleuel übertragen die Kräfte und die Kurbelwelle dreht sich.</div><button class="next" onclick="motionOn=!motionOn">${motionOn?"⏸ Animation pausieren":"▶︎ Animation starten"}</button>`)}
-ps.forEach((p,i)=>p.addEventListener("click",e=>{e.stopPropagation();showMotion();render({...parts.piston,title:`Kolben ${i+1}`},`<div class="fact"><b>Zylinder ${i+1}</b><br>Ein einzelner Kolben bewegt sich innerhalb seiner Zylinderlaufbahn.</div>`)}));
-rs.forEach((r,i)=>r.addEventListener("click",e=>{e.stopPropagation();showMotion();render({...parts.rod,title:`Pleuel ${i+1}`},`<div class="fact"><b>Zylinder ${i+1}</b><br>Das Pleuel verbindet den jeweiligen Kolben mit der Kurbelwelle.</div>`)}));
-cw.addEventListener("click",e=>{e.stopPropagation();showMotion()});
-document.getElementById("hub").addEventListener("click",e=>{e.stopPropagation();showMotion()});
-render(parts.overview);
+function project(x,y,z){let cy=Math.cos(ry),sy=Math.sin(ry),cx=Math.cos(rx),sx=Math.sin(rx);let x1=x*cy-z*sy,z1=x*sy+z*cy,y1=y*cx-z1*sx,z2=y*sx+z1*cx;let f=900/(900-z2);return [W/2+x1*zoom*f,H/2+y1*zoom*f,z2]}
+function poly(points,fill,stroke="#69747a",lw=2){ctx.beginPath();points.forEach((p,i)=>{let q=project(...p);i?ctx.lineTo(q[0],q[1]):ctx.moveTo(q[0],q[1])});ctx.closePath();ctx.fillStyle=fill;ctx.fill();ctx.strokeStyle=stroke;ctx.lineWidth=lw;ctx.stroke()}
+function box(x,y,z,w,h,d,fill,id){let faces=[
+ [[x-w/2,y-h/2,z-d/2],[x+w/2,y-h/2,z-d/2],[x+w/2,y+h/2,z-d/2],[x-w/2,y+h/2,z-d/2]],
+ [[x-w/2,y-h/2,z+d/2],[x+w/2,y-h/2,z+d/2],[x+w/2,y+h/2,z+d/2],[x-w/2,y+h/2,z+d/2]],
+ [[x-w/2,y-h/2,z-d/2],[x-w/2,y-h/2,z+d/2],[x-w/2,y+h/2,z+d/2],[x-w/2,y+h/2,z-d/2]],
+ [[x+w/2,y-h/2,z-d/2],[x+w/2,y-h/2,z+d/2],[x+w/2,y+h/2,z+d/2],[x+w/2,y+h/2,z-d/2]],
+ [[x-w/2,y-h/2,z-d/2],[x+w/2,y-h/2,z-d/2],[x+w/2,y-h/2,z+d/2],[x-w/2,y-h/2,z+d/2]],
+ [[x-w/2,y+h/2,z-d/2],[x+w/2,y+h/2,z-d/2],[x+w/2,y+h/2,z+d/2],[x-w/2,y+h/2,z+d/2]]
+];let ps=faces.map(f=>({f,avg:f.reduce((a,p)=>a+project(...p)[2],0)/4})).sort((a,b)=>a.avg-b.avg);ps.forEach((o,i)=>poly(o.f,fill, i===5?"#aab2b6":"#4d585f",2))}
+function ellipse(x,y,z,rx0,ry0,fill,stroke="#657077"){let pts=[];for(let i=0;i<40;i++){let a=i*Math.PI*2/40;pts.push([x+Math.cos(a)*rx0,y+Math.sin(a)*ry0,z])}poly(pts,fill,stroke,2)}
+function draw(){
+ctx.clearRect(0,0,W,H);
+ctx.fillStyle="#0c1115";ctx.fillRect(0,0,W,H);
+
+function roundedBox3D(x,y,z,w,h,d,fill,id,edge="#737d82"){
+  box(x,y,z,w,h,d,fill,id);
+}
+function cylX(x,y,z,len,r,fill,edge="#7c868b"){
+  let a=project(x-len/2,y,z),b=project(x+len/2,y,z);
+  ctx.save();ctx.strokeStyle=fill;ctx.lineWidth=r*zoom*.85;ctx.lineCap="round";ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);ctx.stroke();
+  ctx.strokeStyle=edge;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);ctx.stroke();ctx.restore();
+}
+function circle3(x,y,z,r,fill,edge="#7d888e"){
+  let p=project(x,y,z);let rr=r*zoom;
+  ctx.beginPath();ctx.arc(p[0],p[1],rr,0,Math.PI*2);ctx.fillStyle=fill;ctx.fill();ctx.strokeStyle=edge;ctx.lineWidth=2;ctx.stroke();
+}
+function line3(points,color,width=5){
+  ctx.save();ctx.strokeStyle=color;ctx.lineWidth=width;ctx.lineCap="round";ctx.lineJoin="round";ctx.beginPath();
+  points.forEach((p,i)=>{let q=project(...p);i?ctx.lineTo(q[0],q[1]):ctx.moveTo(q[0],q[1])});ctx.stroke();ctx.restore();
+}
+
+/* E34/M50B25 longitudinal layout:
+   intake/airbox on left in this view, exhaust manifolds on right,
+   accessory drive at front, long inline-six block and sump. */
+roundedBox3D(0,62,0,555,230,178,"#515b60","block","#8f999e");
+
+/* block casting ribs + six bores */
+for(let i=-2.5;i<=2.5;i++){
+  let x=i*77;
+  circle3(x,-2,-92,31,"#242b2f","#a9b1b4");
+  circle3(x,-2,-94,21,"#12171a","#59646a");
+  line3([[x-31,35,-92],[x-31,115,-92]],"#777f84",4);
+  line3([[x+31,35,-92],[x+31,115,-92]],"#777f84",4);
+}
+/* lower crankcase web */
+roundedBox3D(0,145,0,530,105,175,"#394247","crankcase","#707b81");
+/* E34 sump: deeper rearward section */
+roundedBox3D(0,205,0,515,82,182,"#20282d","oilpan","#707a80");
+roundedBox3D(105,224,0,205,48,150,"#171d21","oilpan2","#4d585e");
+
+/* cylinder head with six combustion chambers */
+roundedBox3D(0,-112,0,565,92,190,"#929b9f","head","#c0c6c9");
+for(let i=-2.5;i<=2.5;i++){
+  let x=i*77;
+  circle3(x,-112,-99,25,"#3d454a","#c2c7ca");
+  circle3(x,-112,-101,17,"#1b2125","#717b80");
+}
+/* head casting channels */
+line3([[-265,-80,-100],[-180,-80,-100],[-95,-80,-100],[-10,-80,-100],[75,-80,-100],[160,-80,-100],[265,-80,-100]],"#555f64",8);
+
+/* black M50 valve cover with ribbed upper surface */
+roundedBox3D(0,-181,0,535,76,166,"#1e2529","valve","#7f898e");
+for(let i=-4;i<=4;i++)line3([[i*45,-207,-86],[i*45,-155,-86]],"#4e595f",5);
+let bp=project(0,-183,-87);
+ctx.save();ctx.font="bold 18px system-ui";ctx.fillStyle="#cbd0d2";ctx.textAlign="center";ctx.fillText("BMW",bp[0],bp[1]);ctx.restore();
+/* oil filler cap on valve cover */
+circle3(165,-184,-95,25,"#2b3338","#969fa4");circle3(165,-184,-98,14,"#171c20","#59646a");
+
+/* six individual ignition coil housings */
+for(let i=-2.5;i<=2.5;i++){
+  roundedBox3D(i*77,-165,-96,43,62,26,"#11161a","coils","#606b71");
+  circle3(i*77,-140,-112,8,"#657077","#aeb5b8");
+}
+
+/* intake manifold: six runners, large black plenum and throttle body */
+roundedBox3D(-300,15,0,185,90,215,"#20282d","intake","#68737a");
+for(let i=-2.5;i<=2.5;i++){
+  let x=i*45-305;
+  cylX(x,10,-113,125,20,"#303a3f","#737d82");
+  line3([[x-58,10,-113],[x+58,10,-113]],"#101519",9);
+}
+roundedBox3D(-390,5,0,92,85,230,"#252e33","intake","#707a80");
+/* throttle */
+circle3(-445,15,0,42,"#8c9599","#c2c8ca");circle3(-445,15,-4,24,"#252c31","#687279");
+line3([[-468,15,-4],[-422,15,-4]],"#b9c0c3",6);
+
+/* E34 airbox and intake elbow */
+roundedBox3D(-475,125,0,125,160,165,"#181e22","airbox","#59646a");
+line3([[-530,70,0],[-475,100,0],[-440,135,0]],"#30383d",24);
+circle3(-518,90,-90,18,"#0d1215","#687279");
+
+/* exhaust: distinct front and rear 3-into-1 manifold groups */
+function exhaustBranch(x0,y0,z0,side){
+  for(let j=0;j<3;j++){
+    let yy=y0+(j-1)*34;
+    line3([[x0,yy,side*108],[x0+45,yy+10,side*118],[x0+95,yy+25,side*122],[x0+140,yy+35,side*125]],"#8b9295",18);
+  }
+  line3([[x0+135,y0-25,side*125],[x0+205,y0,side*125],[x0+250,y0+25,side*125]],"#666f74",23);
+}
+exhaustBranch(270,-25,0,1);exhaustBranch(270,60,0,1);
+
+/* front accessory drive: water pump, alternator, tensioner, crank pulley */
+circle3(300,128,108,63,"#5e686d","#b9c0c3");
+circle3(300,128,111,18,"#222a2e","#8d979c");
+circle3(375,155,112,47,"#737c81","#bcc2c5");
+circle3(375,155,115,15,"#242b2f","#8d969b");
+circle3(220,180,115,31,"#555f64","#9ba4a8");
+/* serpentine belt loop */
+let beltPts=[];
+for(let i=0;i<=60;i++){let a=i*Math.PI*2/60;beltPts.push([330+105*Math.cos(a),145+85*Math.sin(a),125])}
+line3(beltPts,"#111518",15);
+
+/* visible E34 front coolant outlet / thermostat housing */
+roundedBox3D(420,35,110,85,75,75,"#737d81","water","#aab2b6");
+circle3(420,35,151,22,"#333b40","#b2b9bc");
+
+/* crank pulley and harmonic mass at lower front */
+circle3(250,215,128,72,"#343c41","#b5bcc0");
+circle3(250,215,132,51,"#151a1e","#7f898e");
+circle3(250,215,136,18,"#6d777c","#c0c6c8");
+
+/* starter area */
+roundedBox3D(-235,115,105,105,75,80,"#252d32","starter","#68737a");
+
+/* crankshaft hint through lower block */
+line3([[-210,130,-110],[-120,160,-110],[-30,140,-110],[60,165,-110],[150,140,-110],[235,160,-110]],"#c7cdcf",8);
+for(let i=-2.5;i<=2.5;i++)circle3(i*77,145,-112,9,"#d1d5d7","#5f696f");
+
+/* labels only when selected */
+if(selected!=="overview"){
+  let p=parts[selected], lp=project(0,-275,0);
+  ctx.save();ctx.font="600 13px system-ui";ctx.fillStyle="#dce5e9";ctx.textAlign="center";
+  ctx.fillText(p.title,lp[0],lp[1]);ctx.restore();
+}
+}
+function setView(a,b,z=1){rx=a;ry=b;zoom=z}
+function resetView(){setView(-.16,-.55,1);renderPart("overview")}
+function viewFront(){setView(-.05,0,1.05)}function viewTop(){setView(-1.15,0,1)}function viewSide(){setView(-.05,1.55,1.05)}
+function toggleAuto(){auto=!auto;document.getElementById("autoBtn").classList.toggle("active",auto)}
+let lastT=performance.now();function tick(t){let dt=(t-lastT)/1000;lastT=t;if(auto)ry+=dt*.35;requestAnimationFrame(tick)}requestAnimationFrame(tick);
+
+function pointerDown(e){drag=true;lastX=e.clientX;lastY=e.clientY}
+function pointerMove(e){if(!drag)return;let dx=e.clientX-lastX,dy=e.clientY-lastY;ry+=dx*.008;rx+=dy*.006;rx=Math.max(-1.45,Math.min(1.45,rx));lastX=e.clientX;lastY=e.clientY}
+function pointerUp(){drag=false}
+viewer.addEventListener("pointerdown",pointerDown);viewer.addEventListener("pointermove",pointerMove);viewer.addEventListener("pointerup",pointerUp);viewer.addEventListener("pointercancel",pointerUp);
+viewer.addEventListener("wheel",e=>{e.preventDefault();zoom*=Math.exp(-e.deltaY*.001);zoom=Math.max(.55,Math.min(1.8,zoom))},{passive:false});
+let touchDist=0;viewer.addEventListener("touchstart",e=>{if(e.touches.length===2){touchDist=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY)}},{passive:false});
+viewer.addEventListener("touchmove",e=>{if(e.touches.length===2){e.preventDefault();let d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);zoom*=d/touchDist;zoom=Math.max(.55,Math.min(1.8,zoom));touchDist=d}},{passive:false});
+
+canvas.addEventListener("click",e=>{
+ let r=canvas.getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top;
+ let targets=[
+  ["valve",0,-181,250,42],
+  ["head",0,-112,275,48],
+  ["block",0,62,275,115],
+  ["intake",-300,15,95,75],
+  ["exhaust",350,45,105,125],
+  ["water",300,128,85,85],
+  ["crank",250,215,90,75]
+ ];
+ for(const [id,xx,yy,ww,hh] of targets){
+   let p=project(xx,yy,0);
+   if(Math.abs(x-p[0])<ww*zoom&&Math.abs(y-p[1])<hh*zoom){renderPart(id);return}
+ }
+});
+draw();renderPart("overview");
 </script>
 </body>
 </html>
