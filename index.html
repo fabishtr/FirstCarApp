@@ -12,7 +12,7 @@ body{min-height:100svh;overflow-x:hidden}button{font:inherit;color:inherit;borde
 header{padding:calc(12px + env(safe-area-inset-top)) 15px 12px;background:#10161b;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:10px}
 h1{font-size:19px;margin:0}.sub{font-size:11px;color:var(--muted);margin-top:3px}.reset{padding:9px 12px;background:#232c33;border:1px solid #3a474f;border-radius:9px}
 .app{display:grid;grid-template-columns:minmax(0,1fr) 350px;min-height:calc(100svh - 70px)}
-.viewer{position:relative;min-height:650px;overflow:hidden;background:radial-gradient(circle at 50% 43%,#2b343b 0,#151b21 45%,#070a0d 100%);touch-action:none}
+.viewer{position:relative;min-height:650px;overflow:hidden;background:radial-gradient(circle at 50% 43%,#2b343b 0,#151b21 45%,#070a0d 100%);touch-action:none;overscroll-behavior:none;-webkit-user-select:none;user-select:none}
 #canvas{width:100%;height:100%;display:block}
 .hud{position:absolute;z-index:5;top:12px;left:12px;right:12px;display:flex;gap:7px;flex-wrap:wrap;pointer-events:none}
 .hud>*{pointer-events:auto}
@@ -41,7 +41,7 @@ h1{font-size:19px;margin:0}.sub{font-size:11px;color:var(--muted);margin-top:3px
 <div class="status" id="status">M50B25 · Außenansicht</div>
 </div>
 <canvas id="canvas"></canvas>
-<div class="help">Finger ziehen = drehen · zwei Finger = zoomen · Bauteil antippen = auswählen</div>
+<div class="help">Finger ziehen = 3D-Motor drehen · zwei Finger = zoomen · Bauteil antippen = auswählen</div>
 </section>
 <aside class="panel" id="panel"></aside>
 </div>
@@ -198,6 +198,7 @@ if(selected!=="overview"){
   ctx.save();ctx.font="600 13px system-ui";ctx.fillStyle="#dce5e9";ctx.textAlign="center";
   ctx.fillText(p.title,lp[0],lp[1]);ctx.restore();
 }
+ requestAnimationFrame(draw);
 }
 function setView(a,b,z=1){rx=a;ry=b;zoom=z}
 function resetView(){setView(-.16,-.55,1);renderPart("overview")}
@@ -208,7 +209,7 @@ let lastT=performance.now();function tick(t){let dt=(t-lastT)/1000;lastT=t;if(au
 function pointerDown(e){drag=true;lastX=e.clientX;lastY=e.clientY}
 function pointerMove(e){if(!drag)return;let dx=e.clientX-lastX,dy=e.clientY-lastY;ry+=dx*.008;rx+=dy*.006;rx=Math.max(-1.45,Math.min(1.45,rx));lastX=e.clientX;lastY=e.clientY}
 function pointerUp(){drag=false}
-viewer.addEventListener("pointerdown",pointerDown);viewer.addEventListener("pointermove",pointerMove);viewer.addEventListener("pointerup",pointerUp);viewer.addEventListener("pointercancel",pointerUp);
+viewer.addEventListener("pointerdown",e=>{e.preventDefault(); viewer.setPointerCapture?.(e.pointerId); pointerDown(e);});viewer.addEventListener("pointermove",e=>{e.preventDefault(); pointerMove(e);});viewer.addEventListener("pointerup",e=>{drag=false; try{viewer.releasePointerCapture?.(e.pointerId)}catch(_){};});viewer.addEventListener("pointercancel",pointerUp);
 viewer.addEventListener("wheel",e=>{e.preventDefault();zoom*=Math.exp(-e.deltaY*.001);zoom=Math.max(.55,Math.min(1.8,zoom))},{passive:false});
 let touchDist=0;viewer.addEventListener("touchstart",e=>{if(e.touches.length===2){touchDist=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY)}},{passive:false});
 viewer.addEventListener("touchmove",e=>{if(e.touches.length===2){e.preventDefault();let d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);zoom*=d/touchDist;zoom=Math.max(.55,Math.min(1.8,zoom));touchDist=d}},{passive:false});
