@@ -35,6 +35,7 @@ h1{font-size:19px;margin:0}.sub{font-size:11px;color:var(--muted);margin-top:3px
 <section class="viewer" id="viewer">
 <div class="hud">
 <button class="tool" id="autoBtn" onclick="toggleAuto()">⟳ Auto-Drehung</button>
+<button class="tool" id="removeBtn" onclick="removeValveCover()">🔧 Ventildeckel ausbauen</button>
 <button class="tool" onclick="viewFront()">Front</button>
 <button class="tool" onclick="viewTop()">Oben</button>
 <button class="tool" onclick="viewSide()">Seite</button>
@@ -48,6 +49,7 @@ h1{font-size:19px;margin:0}.sub{font-size:11px;color:var(--muted);margin-top:3px
 <script>
 const canvas=document.getElementById("canvas"),ctx=canvas.getContext("2d"),viewer=document.getElementById("viewer");
 let W=0,H=0,dpr=1,rx=-.16,ry=-.55,zoom=1,auto=false,drag=false,lastX=0,lastY=0,pinch=0,selected="overview";
+let valveRemoved=false, valveProgress=0;
 const parts={
 overview:{tag:"M50B25 · 3D",title:"BMW M50B25",text:"Erste drehbare 3D-Lernansicht des M50B25 im E34. Die Darstellung ist bewusst modular aufgebaut: Zylinderblock, Zylinderkopf, Ventildeckel, Ansaugung, Abgasseite und Nebenaggregate sind getrennte Baugruppen.",why:"Diese Version ist das Fundament für die spätere echte Zerlegung. Jede Baugruppe kann anschließend eine eigene Position, Abhängigkeit und Ausbaubewegung bekommen.",links:["Zylinderblock","Zylinderkopf","Ventildeckel","Ansaugung","Abgaskrümmer","Kurbeltrieb"]},
 block:{tag:"Grundmotor",title:"Zylinderblock",text:"Der Block bildet das tragende Zentrum des Reihensechszylinders. Im Inneren sitzen sechs Zylinder, die Kurbelwelle und die Hauptlager.",why:"Der Block wird erst geöffnet bzw. zerlegt, wenn die darüberliegenden Baugruppen entfernt wurden.",links:["6 Zylinder","Kurbelwelle","Hauptlager","Ölversorgung"]},
@@ -63,6 +65,30 @@ function showRemoval(id){let p=parts[id];document.getElementById("panel").innerH
 function resize(){let r=viewer.getBoundingClientRect();dpr=Math.min(devicePixelRatio||1,2);W=r.width;H=r.height;canvas.width=W*dpr;canvas.height=H*dpr;canvas.style.width=W+"px";canvas.style.height=H+"px";ctx.setTransform(dpr,0,0,dpr,0,0)}
 window.addEventListener("resize",resize);resize();
 
+
+function removeValveCover(){
+  if(valveRemoved) return;
+  selected="valve";
+  valveRemoved=true;
+  document.getElementById("removeBtn").textContent="↩ Ventildeckel wieder einbauen";
+  document.getElementById("removeBtn").onclick=restoreValveCover;
+  document.getElementById("status").textContent="Ventildeckel ausgebaut";
+  document.getElementById("panel").innerHTML=`
+    <span class="badge">Zerlegung · Schritt 1</span>
+    <h2>Ventildeckel ausgebaut</h2>
+    <p>Der Ventildeckel ist jetzt als eigenes Bauteil vom Motor abgehoben. Der Bereich darunter wird sichtbar.</p>
+    <h3>Was wird sichtbar?</h3>
+    <ul><li>oberer Zylinderkopfbereich</li><li>Zündspulen</li><li>Ventiltrieb-Bereich</li><li>Bereich der beiden Nockenwellen</li></ul>
+    <div class="fact"><b>Reihenfolge</b><br>Der Ventildeckel gehört zu den ersten Baugruppen, die bei einer Zerlegung des oberen Motorbereichs entfernt werden.</div>
+    <button class="secondary" onclick="restoreValveCover()">↩ Ventildeckel wieder einbauen</button>`;
+}
+function restoreValveCover(){
+  valveRemoved=false;
+  document.getElementById("removeBtn").textContent="🔧 Ventildeckel ausbauen";
+  document.getElementById("removeBtn").onclick=removeValveCover;
+  document.getElementById("status").textContent="M50B25 · Außenansicht";
+  renderPart("valve");
+}
 function project(x,y,z){let cy=Math.cos(ry),sy=Math.sin(ry),cx=Math.cos(rx),sx=Math.sin(rx);let x1=x*cy-z*sy,z1=x*sy+z*cy,y1=y*cx-z1*sx,z2=y*sx+z1*cx;let f=900/(900-z2);return [W/2+x1*zoom*f,H/2+y1*zoom*f,z2]}
 function poly(points,fill,stroke="#69747a",lw=2){ctx.beginPath();points.forEach((p,i)=>{let q=project(...p);i?ctx.lineTo(q[0],q[1]):ctx.moveTo(q[0],q[1])});ctx.closePath();ctx.fillStyle=fill;ctx.fill();ctx.strokeStyle=stroke;ctx.lineWidth=lw;ctx.stroke()}
 function box(x,y,z,w,h,d,fill,id){let faces=[
@@ -124,13 +150,25 @@ for(let i=-2.5;i<=2.5;i++){
 /* head casting channels */
 line3([[-265,-80,-100],[-180,-80,-100],[-95,-80,-100],[-10,-80,-100],[75,-80,-100],[160,-80,-100],[265,-80,-100]],"#555f64",8);
 
-/* black M50 valve cover with ribbed upper surface */
-roundedBox3D(0,-181,0,535,76,166,"#1e2529","valve","#7f898e");
-for(let i=-4;i<=4;i++)line3([[i*45,-207,-86],[i*45,-155,-86]],"#4e595f",5);
-let bp=project(0,-183,-87);
+/* black M50 valve cover: separate movable assembly */
+let targetLift=valveRemoved?150:0; valveProgress+=(targetLift-valveProgress)*0.14; let coverLift=valveProgress;
+roundedBox3D(0,-181-coverLift,0,535,76,166,"#1e2529","valve","#7f898e");
+for(let i=-4;i<=4;i++)line3([[i*45,-207-coverLift,-86],[i*45,-155-coverLift,-86]],"#4e595f",5);
+let bp=project(0,-183-coverLift,-87);
 ctx.save();ctx.font="bold 18px system-ui";ctx.fillStyle="#cbd0d2";ctx.textAlign="center";ctx.fillText("BMW",bp[0],bp[1]);ctx.restore();
-/* oil filler cap on valve cover */
-circle3(165,-184,-95,25,"#2b3338","#969fa4");circle3(165,-184,-98,14,"#171c20","#59646a");
+/* oil filler cap */
+circle3(165,-184-coverLift,-95,25,"#2b3338","#969fa4");circle3(165,-184-coverLift,-98,14,"#171c20","#59646a");
+
+/* exposed upper valve-train area appears after cover removal */
+if(valveRemoved){
+  roundedBox3D(0,-170,0,500,35,150,"#30383d","cams","#737d82");
+  for(let i=-2.5;i<=2.5;i++){
+    circle3(i*77,-168,-82,20,"#59636a","#b3b9bc");
+    circle3(i*77,-168,-90,9,"#161b1f","#7d878c");
+  }
+  line3([[-245,-185,-105],[245,-185,-105]],"#aeb5b8",7);
+  line3([[-245,-158,-105],[245,-158,-105]],"#7c878c",7);
+}
 
 /* six individual ignition coil housings */
 for(let i=-2.5;i<=2.5;i++){
@@ -201,7 +239,7 @@ if(selected!=="overview"){
  requestAnimationFrame(draw);
 }
 function setView(a,b,z=1){rx=a;ry=b;zoom=z}
-function resetView(){setView(-.16,-.55,1);renderPart("overview")}
+function resetView(){setView(-.16,-.55,1);valveRemoved=false;valveProgress=0;document.getElementById("removeBtn").textContent="🔧 Ventildeckel ausbauen";document.getElementById("removeBtn").onclick=removeValveCover;renderPart("overview")}
 function viewFront(){setView(-.05,0,1.05)}function viewTop(){setView(-1.15,0,1)}function viewSide(){setView(-.05,1.55,1.05)}
 function toggleAuto(){auto=!auto;document.getElementById("autoBtn").classList.toggle("active",auto)}
 let lastT=performance.now();function tick(t){let dt=(t-lastT)/1000;lastT=t;if(auto)ry+=dt*.35;requestAnimationFrame(tick)}requestAnimationFrame(tick);
@@ -227,7 +265,7 @@ canvas.addEventListener("click",e=>{
  ];
  for(const [id,xx,yy,ww,hh] of targets){
    let p=project(xx,yy,0);
-   if(Math.abs(x-p[0])<ww*zoom&&Math.abs(y-p[1])<hh*zoom){renderPart(id);return}
+   if(Math.abs(x-p[0])<ww*zoom&&Math.abs(y-p[1])<hh*zoom){renderPart(id); if(id==="valve" && !valveRemoved){document.getElementById("panel").innerHTML+=`<button class="primary" onclick="removeValveCover()">🔧 Ventildeckel ausbauen</button>`;} return}
  }
 });
 draw();renderPart("overview");
