@@ -1,212 +1,71 @@
 <!doctype html>
-<html lang="de">
-<head>
-<meta charset="utf-8">
+<html lang="de"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
-<title>M50B25 · Detailliertes äußeres 3D-Modell</title>
+<title>M50B25 – Standalone 3D</title>
 <style>
-*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#080b0e;color:#eef2f4;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif}
-#app{position:fixed;inset:0;display:grid;grid-template-columns:minmax(0,1fr) 310px}
-#view{position:relative;min-width:0;min-height:0;background:radial-gradient(circle at 50% 40%,#303a40 0,#12191e 56%,#07090b 100%)}
-canvas{display:block;width:100%;height:100%;touch-action:none}
-#hud{position:absolute;top:calc(10px + env(safe-area-inset-top));left:10px;right:10px;display:flex;gap:7px;flex-wrap:wrap;z-index:3}
-button,.pill{font:inherit;color:#e8eef1;border:1px solid #3b4850;background:#151e24dd;border-radius:9px;padding:9px 11px;backdrop-filter:blur(7px)}
-button:active{transform:scale(.98)}button.active{background:#285468;border-color:#6fb5ca}.pill{font-size:12px;color:#b9c5ca}
-#hint{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);padding:7px 10px;border:1px solid #2c373e;background:#080c10bb;border-radius:8px;font-size:11px;color:#aeb9be;white-space:nowrap}
-aside{background:#11171c;border-left:1px solid #303b42;padding:18px;overflow:auto}
-h1{font-size:20px;margin:0 0 5px}h2{font-size:15px;margin:20px 0 7px}p,li{font-size:13px;line-height:1.55;color:#bcc7cd}.badge{display:inline-block;padding:5px 8px;border-radius:99px;background:#243944;border:1px solid #3e5d68;color:#bfe4ef;font-size:11px}
-.fact{margin-top:14px;padding:11px;border:1px solid #303c43;background:#0b1116;border-radius:9px;font-size:12px;line-height:1.5;color:#c0cbd0}
-@media(max-width:800px){#app{grid-template-columns:1fr;grid-template-rows:minmax(0,67svh) minmax(0,33svh)}aside{border-left:0;border-top:1px solid #303b42;padding:13px}h1{font-size:17px}h2{margin:11px 0 5px}.fact{display:none}}
-</style>
-</head>
-<body>
-<div id="app">
-<section id="view">
-<div id="hud">
-<button id="auto">⟳ Auto-Drehung</button>
-<button onclick="front()">Front</button>
-<button onclick="side()">Seite</button>
-<button onclick="topView()">Oben</button>
-<button onclick="resetCam()">↺ Ansicht</button>
-<span class="pill">M50B25 · Außenmodell</span>
-</div>
-<canvas id="c"></canvas>
-<div id="hint">1 Finger = drehen · 2 Finger = zoomen · Mausrad = Zoom</div>
-</section>
-<aside>
-<span class="badge">M50B25 · E34 525i</span>
-<h1>Detailliertes Außenmodell</h1>
-<p>Neu aufgebaute äußere Geometrie mit zusammenhängender Motorarchitektur und fest positionierten Anbauteilen.</p>
-<h2>Modellierungsziel</h2>
-<ul>
-<li>realistischere Silhouette statt Quaderaufbau</li>
-<li>abgerundete Gussformen und Flansche</li>
-<li>klar getrennte Ansaug- und Abgasseite</li>
-<li>typische M50-Front mit Nebenaggregaten</li>
-<li>geschlossene Außenansicht ohne künstlich sichtbares Innenleben</li>
-</ul>
-<div class="fact"><b>Wichtig:</b> Dieses Modell ist eine detaillierte technische Rekonstruktion für den Lern-Prototypen, kein vermessener CAD-Datensatz. Die nächste Modellierungsstufe kann einzelne Gehäuseformen weiter verfeinern.</div>
-</aside>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.min.js"></script>
+html,body{margin:0;height:100%;overflow:hidden;background:#080b0d;color:#e9eef0;font-family:-apple-system,BlinkMacSystemFont,sans-serif}
+#v{position:fixed;inset:0;background:radial-gradient(circle at 50% 42%,#303a40,#11171b 62%,#06080a)}
+canvas{width:100%;height:100%;display:block;touch-action:none}
+#ui{position:absolute;top:10px;left:10px;right:10px;display:flex;gap:7px;flex-wrap:wrap}
+button{padding:9px 11px;border-radius:9px;border:1px solid #42515a;background:#142027dd;color:#eaf0f2;font:inherit}
+#msg{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);padding:14px 18px;border:1px solid #4a5961;background:#10171bcc;border-radius:10px;display:none}
+#hint{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);font-size:11px;color:#aeb9bd;background:#080c0ecc;padding:7px 10px;border-radius:8px;white-space:nowrap}
+</style></head><body>
+<div id="v"><canvas id="gl"></canvas><div id="ui">
+<button onclick="reset()">↺ Ansicht</button><button onclick="front()">Front</button><button onclick="side()">Seite</button><button onclick="topv()">Oben</button><button id="auto" onclick="aut=!aut">⟳ Auto-Drehung</button>
+</div><div id="msg">WebGL wird nicht unterstützt.</div><div id="hint">Finger ziehen = drehen · Zwei Finger = Zoom · Mausrad = Zoom</div></div>
 <script>
-const canvas=document.getElementById("c"), view=document.getElementById("view");
-let scene,camera,renderer,engine,auto=false;
-const cam={rx:-.18,ry:-.62,d:7.8,tx:0,ty:0,tz:0,drag:false,x:0,y:0,pinch:0};
-
-function material(c,metal=.65,rough=.34){return new THREE.MeshStandardMaterial({color:c,metalness:metal,roughness:rough});}
-function roundedBox(name,s,p,c,r=.12,metal=.65,rough=.34){
- const g=new THREE.Group();g.name=name;
- const geo=new THREE.BoxGeometry(...s);
- const m=new THREE.Mesh(geo,material(c,metal,rough));
- m.position.set(...p);
- g.add(m);
- return g;
+const c=document.getElementById('gl'),g=c.getContext('webgl',{antialias:true,alpha:false});
+if(!g){document.getElementById('msg').style.display='block'}else{
+const vs=`attribute vec3 p,n;uniform mat4 mvp,m;varying vec3 N,P;void main(){P=(m*vec4(p,1.)).xyz;N=mat3(m)*n;gl_Position=mvp*vec4(p,1.);}`;
+const fs=`precision mediump float;varying vec3 N,P;uniform vec3 col;void main(){vec3 l=normalize(vec3(-.5,.8,1.));vec3 l2=normalize(vec3(1.,.2,-.8));float d=max(dot(normalize(N),l),0.)*.72+max(dot(normalize(N),l2),0.)*.28;float s=.16+d*.84;gl_FragColor=vec4(col*s,1.);}`;
+function sh(t,s){let x=g.createShader(t);g.shaderSource(x,s);g.compileShader(x);return x}
+let pr=g.createProgram();g.attachShader(pr,sh(g.VERTEX_SHADER,vs));g.attachShader(pr,sh(g.FRAGMENT_SHADER,fs));g.linkProgram(pr);g.useProgram(pr);
+let P=g.getAttribLocation(pr,'p'),N=g.getAttribLocation(pr,'n'),MVP=g.getUniformLocation(pr,'mvp'),MM=g.getUniformLocation(pr,'m'),COL=g.getUniformLocation(pr,'col');
+let V=[],I=[],parts=[];
+function addBox(x,y,z,sx,sy,sz,col,rx=0){
+ let b=V.length/6, X=sx/2,Y=sy/2,Z=sz/2;
+ let q=[[-X,-Y,-Z],[X,-Y,-Z],[X,Y,-Z],[-X,Y,-Z],[-X,-Y,Z],[X,-Y,Z],[X,Y,Z],[-X,Y,Z]];
+ let faces=[[0,1,2,3,0,0,-1],[4,7,6,5,0,0,1],[0,4,5,1,0,-1,0],[3,2,6,7,0,1,0],[0,3,7,4,-1,0,0],[1,5,6,2,1,0,0]];
+ for(let f of faces){let [a,b1,c1,d,nx,ny,nz]=f;[a,b1,c1,d].forEach(k=>V.push(q[k][0],q[k][1],q[k][2],nx,ny,nz));let j=V.length/6-4;I.push(j,j+1,j+2,j,j+2,j+3)}
+ parts.push([I.length-6*1,col]);
 }
-function cylinder(name,r,depth,p,c,rot=[0,0,0],metal=.7,rough=.3,segments=48){
- const g=new THREE.Group();g.name=name;
- const m=new THREE.Mesh(new THREE.CylinderGeometry(r,r,depth,segments),material(c,metal,rough));
- m.position.set(...p);m.rotation.set(...rot);g.add(m);return g;
+function addCyl(x,y,z,r,h,col,axis='y',seg=24){
+ let base=V.length/6;
+ for(let k=0;k<seg;k++){let a=k*2*Math.PI/seg,xx=Math.cos(a)*r,zz=Math.sin(a)*r;V.push(xx,-h/2,zz,xx,0,zz);V.push(xx,h/2,zz,xx,0,zz)}
+ for(let k=0;k<seg;k++){let a=2*k,b=2*((k+1)%seg);I.push(base+a,base+b,base+b+1,base+a,base+b+1,base+a+1)}
+ // caps
+ for(let top of [-1,1]){let cb=V.length/6;V.push(0,top*h/2,0,0,top,0);for(let k=0;k<seg;k++){let a=base+2*k+(top>0?1:0),b=base+2*((k+1)%seg)+(top>0?1:0);I.push(cb,b,a)}}
+ parts.push([I.length-6*seg-6*seg,col]);
 }
-function capsule(name,length,r,p,c,axis="x",metal=.7,rough=.3){
- const g=new THREE.Group();g.name=name;
- const mid=new THREE.Mesh(new THREE.CylinderGeometry(r,r,length,32),material(c,metal,rough));
- const a=new THREE.Mesh(new THREE.SphereGeometry(r,32,16),material(c,metal,rough));
- const b=a.clone();
- if(axis==="x"){mid.rotation.z=Math.PI/2;a.position.x=-length/2;b.position.x=length/2}
- if(axis==="y"){a.position.y=-length/2;b.position.y=length/2}
- if(axis==="z"){mid.rotation.x=Math.PI/2;a.position.z=-length/2;b.position.z=length/2}
- g.add(mid,a,b);g.position.set(...p);return g;
+function transformAll(x,y,z,sx=1,sy=1,sz=1,rotY=0){
+ let start=0; // geometry is placed by rebuilding local values; simpler: translate every vertex globally is not per-part.
 }
-function add(o){engine.add(o);return o}
+function cube(x,y,z,sx,sy,sz,col){let old=V.length/6;addBox(0,0,0,sx,sy,sz,col);for(let i=old;i<V.length/6;i++){V[i*6]+=x;V[i*6+1]+=y;V[i*6+2]+=z}}
+function cyl(x,y,z,r,h,col,axis='y'){let old=V.length/6;addCyl(0,0,0,r,h,col);for(let i=old;i<V.length/6;i++){let X=V[i*6],Y=V[i*6+1],Z=V[i*6+2];if(axis==='x'){let t=X;X=Y;Y=t}if(axis==='z'){let t=Z;Z=Y;Y=t}V[i*6]=X+x;V[i*6+1]=Y+y;V[i*6+2]=Z+z}}
+const C={metal:[.30,.34,.36],silver:[.52,.56,.57],dark:[.07,.09,.10],black:[.035,.045,.05],rubber:[.025,.035,.038],alu:[.55,.58,.59]};
+cube(0,0,0,5.35,2.1,1.75,C.metal);cube(0,.92,0,5.18,.72,1.8,C.silver);
+cube(0,-1.08,0,5.08,.78,1.7,C.metal);cube(0,-1.82,0,4.75,.72,1.62,C.dark);cube(1.1,-2.28,0,1.7,.48,1.45,C.black);
+cube(0,1.48,0,5.45,.92,1.86,C.alu);cube(-2.72,.18,0,.78,2.48,1.96,C.metal);
+cube(0,2.15,0,5.15,.58,1.62,C.black);cube(0,2.52,0,4.72,.20,1.46,C.dark);
+for(let x=-2;x<=2;x+=.5)cube(x,2.68,0,.075,.08,1.35,[.20,.23,.24]);
+cyl(1.45,2.72,.82,.22,.13,C.dark,'z');
+cube(.72,.72,-1.15,2.55,.86,.62,[.12,.15,.16]);
+for(let i=-2.5;i<=2.5;i++){cube(i*.77,.91,-1.38,.55,.72,.55,[.18,.22,.23])}
+cyl(-.8,.72,-1.52,.45,.5,C.alu,'z');cyl(-.8,.72,-1.77,.31,.08,C.dark,'z');
+cube(-1.6,.72,-1.52,1.2,.62,.62,C.rubber);cube(-2.7,.35,-1.3,1.25,1.55,1.34,C.black);cube(-2.7,1.22,-1.3,1.3,.18,1.4,C.dark);
+for(let x=-2.2;x<=2.2;x+=.55)cube(x,0,0,.1,1.45,1.84,[.37,.40,.41]);
+for(let x=-1.48;x<1.5;x+=2.96){cube(x,1.02,1.18,2.3,1.05,.46,[.43,.45,.46]);for(let j=0;j<3;j++)cyl(x-.62+j*.62,1.02,1.42,.13,.82,[.48,.50,.51],'z')}
+cube(2.82,.1,0,.58,2.4,1.9,C.metal);cyl(2.82,-1.03,1.02,.66,.30,C.dark,'z');cyl(2.82,.15,1.03,.56,.30,C.alu,'z');cyl(2.64,.85,1.10,.60,.86,C.alu,'x');cyl(2.18,.96,1.10,.31,.22,C.metal,'z');cube(2.5,.76,1.05,.7,.68,.7,C.alu);cyl(-1.95,-.18,1.12,.36,.95,C.dark,'x');
 
-function build(){
- engine=new THREE.Group();scene.add(engine);
-
- // Main M50 castings: overlapping rounded volumes create continuous silhouette.
- add(roundedBox("Blockkern",[5.35,2.05,1.72],[0,0,0],0x4e585d,.18,.78,.31));
- add(roundedBox("Block_oben",[5.15,.72,1.78],[0,.93,0],0x586267,.18,.76,.30));
- add(roundedBox("Kurbelgehäuse",[5.05,.78,1.68],[0,-1.08,0],0x3e474c,.20,.78,.34));
-
- // Side casting ribs and bolt bosses.
- for(let x=-2.2;x<=2.2;x+=.55){
-   add(roundedBox("Blockrippe",[.11,1.48,1.83],[x,.02,0],0x626b70,.04,.70,.33));
- }
- for(let x=-2.25;x<=2.25;x+=.75){
-   add(cylinder("Gussbossen",.12,.08,[x,-.15,.94],0x747d81,[Math.PI/2,0,0],.78,.30,32));
- }
-
- // Lower oil pan with flanged edge and stepped sump.
- add(roundedBox("Oelwannenflansch",[5.18,.18,1.84],[0,-1.48,0],0x252d31,.07,.82,.29));
- add(roundedBox("Oelwanne",[4.78,.72,1.64],[0,-1.83,.02],0x20282c,.20,.82,.31));
- add(roundedBox("Oelwannentiefteil",[1.75,.48,1.46],[1.10,-2.34,.03],0x181f23,.16,.82,.30));
- add(cylinder("Ablassschraube",.10,.08,[1.12,-2.57,.72],0x6d777b,[Math.PI/2,0,0],.9,.23,32));
-
- // Head and its characteristic front/timing mass.
- add(roundedBox("Zylinderkopf",[5.42,.90,1.86],[0,1.48,0],0x90999d,.22,.70,.27));
- add(roundedBox("Kopfunterseite",[5.12,.30,1.82],[0,1.08,0],0x737d81,.10,.72,.30));
- add(roundedBox("Steuergehaeuse",[.72,2.45,1.96],[-2.78,.15,0],0x555f64,.18,.78,.30));
- add(roundedBox("Steuerdeckel_oben",[.82,.48,2.00],[-2.72,1.42,0],0x626c70,.16,.76,.29));
-
- // M50 valve cover, more sculpted via stepped layers.
- add(roundedBox("Ventildeckel_unten",[5.24,.30,1.64],[0,1.99,0],0x20282c,.14,.50,.30));
- add(roundedBox("Ventildeckel",[5.05,.50,1.55],[0,2.28,0],0x1b2226,.22,.48,.30));
- add(roundedBox("Ventildeckel_mittel",[4.68,.22,1.42],[0,2.60,0],0x20282c,.12,.48,.29));
- for(let x=-2.0;x<=2.0;x+=.5) add(roundedBox("Ventildeckelrippe",[.07,.08,1.34],[x,2.72,0],0x3c454a,.02,.45,.29));
- add(cylinder("Oeleinfuellverschluss",.22,.13,[1.45,2.73,.80],0x2a3237,[Math.PI/2,0,0],.55,.31,48));
-
- // Intake side (-Z): six curved-looking runner pairs, plenum, throttle and elbow.
- add(roundedBox("Ansaugplenum",[2.55,.88,.62],[.72,.73,-1.13],0x232c31,.22,.56,.34));
- for(let i=-2.5;i<=2.5;i++){
-   const x=i*.77;
-   add(capsule("Ansaugkanal",.54,.25,[x,.88,-1.38],0x303a3f,"y",.55,.34));
-   add(roundedBox("Ansaugflansch",[.56,.54,.16],[x,1.02,-.92],0x454f54,.06,.58,.31));
- }
- add(cylinder("Drosselklappengehaeuse",.46,.48,[-.78,.73,-1.48],0x747e82,[Math.PI/2,0,0],.80,.25,48));
- add(cylinder("Drosselklappenring",.31,.07,[-.78,.73,-1.73],0x2b3338,[Math.PI/2,0,0],.72,.28,48));
- add(roundedBox("Ansaugschlauch",[1.25,.62,.62],[-1.58,.72,-1.50],0x1a2125,.24,.30,.46));
- for(let x=-2.1;x<=-1.25;x+=.17) add(roundedBox("Schlauchring",[.035,.68,.68],[x,.72,-1.50],0x313a3f,.02,.28,.40));
-
- // E34 airbox and MAF area.
- add(roundedBox("Luftfilterkasten_unten",[1.22,1.58,1.34],[-2.75,.38,-1.32],0x151b1f,.18,.43,.40));
- add(roundedBox("Luftfilterkasten_deckel",[1.30,.18,1.42],[-2.75,1.25,-1.32],0x242c31,.08,.43,.38));
- add(roundedBox("Luftmassenmesser",[.62,.62,.66],[-2.12,.72,-1.52],0x3d474c,.12,.55,.34));
- add(cylinder("Ansaugrohr",.25,.68,[-1.95,.72,-1.52],0x242c31,[Math.PI/2,0,0],.35,.46,40));
-
- // Exhaust side (+Z): two grouped manifolds with six outlets.
- for(let g=0;g<2;g++){
-   const cx=-1.48+g*2.96;
-   add(roundedBox("Abgaskruemmer", [2.30,1.05,.46],[cx,1.03,1.16],0x737b7f,.22,.88,.25));
-   for(let j=0;j<3;j++){
-     const x=cx-.62+j*.62;
-     add(cylinder("Krümmerrohr",.13,.82,[x,1.02,1.42],0x858c8f,[Math.PI/2,0,0],.88,.23,40));
-   }
-   add(roundedBox("Kruemmerflansch",[2.18,.16,.58],[cx,1.00,1.50],0x5f686d,.05,.88,.25));
- }
-
- // Front accessory drive (+X), mounted to the front cover.
- const fx=2.82;
- add(roundedBox("Vorderdeckel",[.55,2.35,1.90],[fx,.12,0],0x596368,.18,.78,.30));
- add(cylinder("Kurbelwellenriemenscheibe",.66,.30,[fx,-1.03,1.02],0x30383d,[Math.PI/2,0,0],.90,.23));
- add(cylinder("Wasserpumpe",.56,.30,[fx,.15,1.03],0x6d777b,[Math.PI/2,0,0],.88,.24));
- add(cylinder("Lichtmaschine",.60,.88,[fx-.18,.85,1.10],0x626c71,[0,Math.PI/2,0],.92,.22));
- add(cylinder("Spannrolle",.31,.22,[fx-.64,.96,1.10],0x464f54,[Math.PI/2,0,0],.84,.25));
- add(cylinder("Umlenkrolle",.27,.20,[fx-.40,.05,1.12],0x535d62,[Math.PI/2,0,0],.82,.25));
- // Belt as a set of three dark loops to read correctly from distance.
- for(let y of [-.25,.12,.49]){
-   const belt=new THREE.Mesh(new THREE.TorusGeometry(.80,.045,10,64),material(0x111619,.18,.56));
-   belt.rotation.set(Math.PI/2,0,0);belt.position.set(fx-.15,y,1.08);add(belt);
- }
-
- // Thermostat and coolant outlet.
- add(roundedBox("Thermostatgehaeuse",[.68,.68,.70],[2.50,.76,1.05],0x7a8387,.16,.78,.29));
- add(cylinder("Kuehlwasserstutzen",.19,.55,[2.54,1.18,1.08],0x858e92,[Math.PI/2,0,0],.75,.27));
-
- // Starter and mounting pads, physically tucked against block.
- add(roundedBox("Anlasser",[.95,.70,.72],[-1.95,-.18,1.12],0x252d32,.20,.72,.34));
- add(cylinder("Motorlager_links",.30,.18,[-1.95,-1.34,.76],0x272f33,[Math.PI/2,0,0],.50,.43));
- add(cylinder("Motorlager_rechts",.30,.18,[1.95,-1.34,.76],0x272f33,[Math.PI/2,0,0],.50,.43));
-
- // Six small coil/plug cover details on the upper casting.
- for(let i=-2.5;i<=2.5;i++) add(roundedBox("Zundspule",[.34,.11,.50],[i*.77,2.72,-.72],0x11171b,.04,.48,.32));
-
- scene.add(engine);
+let vb=g.createBuffer();g.bindBuffer(g.ARRAY_BUFFER,vb);g.bufferData(g.ARRAY_BUFFER,new Float32Array(V),g.STATIC_DRAW);
+let ib=g.createBuffer();g.bindBuffer(g.ELEMENT_ARRAY_BUFFER,ib);g.bufferData(g.ELEMENT_ARRAY_BUFFER,new Uint16Array(I),g.STATIC_DRAW);
+function matmul(a,b){let o=new Float32Array(16);for(let r=0;r<4;r++)for(let c=0;c<4;c++)for(let k=0;k<4;k++)o[r*4+c]+=a[r*4+k]*b[k*4+c];return o}
+function persp(f,a,n,fa){let q=1/Math.tan(f/2),o=new Float32Array(16);o[0]=q/a;o[5]=q;o[10]=(fa+n)/(n-fa);o[11]=-1;o[14]=2*fa*n/(n-fa);return o}
+function look(ex,ey,ez,cx,cy,cz){let z=[ex-cx,ey-cy,ez-cz],zl=Math.hypot(...z);z=z.map(v=>v/zl);let up=[0,1,0],x=[up[1]*z[2]-up[2]*z[1],up[2]*z[0]-up[0]*z[2],up[0]*z[1]-up[1]*z[0]],xl=Math.hypot(...x);x=x.map(v=>v/xl);let y=[z[1]*x[2]-z[2]*x[1],z[2]*x[0]-z[0]*x[2],z[0]*x[1]-z[1]*x[0]];return new Float32Array([x[0],y[0],z[0],0,x[1],y[1],z[1],0,x[2],y[2],z[2],0,-(x[0]*ex+x[1]*ey+x[2]*ez),-(y[0]*ex+y[1]*ey+y[2]*ez),-(z[0]*ex+z[1]*ey+z[2]*ez),1])}
+let rx=-.2,ry=-.62,d=7.8,aut=false,drag=false,lx,ly,pinch=0;
+function draw(){let w=innerWidth,h=document.getElementById('v').clientHeight;c.width=w*devicePixelRatio;c.height=h*devicePixelRatio;g.viewport(0,0,c.width,c.height);g.enable(g.DEPTH_TEST);g.clearColor(.025,.035,.045,1);g.clear(g.COLOR_BUFFER_BIT|g.DEPTH_BUFFER_BIT);let cx=Math.cos(rx),sx=Math.sin(rx),cy=Math.cos(ry),sy=Math.sin(ry),ex=d*cx*sy,ey=d*sx,ez=d*cx*cy;let vp=matmul(persp(.7,w/h,.03,100),look(ex,ey,ez,0,0,0));g.bindBuffer(g.ARRAY_BUFFER,vb);g.bindBuffer(g.ELEMENT_ARRAY_BUFFER,ib);g.enableVertexAttribArray(P);g.vertexAttribPointer(P,3,g.FLOAT,false,24,0);g.enableVertexAttribArray(N);g.vertexAttribPointer(N,3,g.FLOAT,false,24,12);g.uniformMatrix4fv(MVP,false,vp);g.uniformMatrix4fv(MM,false,new Float32Array([1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1]));g.uniform3f(COL,.34,.37,.38);g.drawElements(g.TRIANGLES,I.length,g.UNSIGNED_SHORT,0);if(aut)ry+=.004;requestAnimationFrame(draw)}
+function reset(){rx=-.2;ry=-.62;d=7.8}function front(){rx=-.08;ry=0;d=7.8}function side(){rx=-.1;ry=Math.PI/2;d=7.8}function topv(){rx=-1.2;ry=0;d=7.8}
+c.onpointerdown=e=>{drag=true;lx=e.clientX;ly=e.clientY};c.onpointermove=e=>{if(!drag)return;ry+=(e.clientX-lx)*.008;rx+=(e.clientY-ly)*.006;lx=e.clientX;ly=e.clientY};c.onpointerup=()=>drag=false;c.onpointercancel=()=>drag=false;c.onwheel=e=>{e.preventDefault();d*=Math.exp(e.deltaY*.0015);d=Math.max(2,Math.min(22,d))};c.ontouchstart=e=>{if(e.touches.length==2)pinch=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY)};c.ontouchmove=e=>{if(e.touches.length==2){e.preventDefault();let z=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);d*=pinch/z;pinch=z}};document.getElementById('auto').onclick=()=>aut=!aut;draw();
 }
-
-function init(){
- scene=new THREE.Scene();scene.background=new THREE.Color(0x090d10);
- camera=new THREE.PerspectiveCamera(40,1,.02,100);
- renderer=new THREE.WebGLRenderer({canvas,antialias:true,powerPreference:"high-performance"});
- renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));
- renderer.outputColorSpace=THREE.SRGBColorSpace;
- renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.08;
- scene.add(new THREE.HemisphereLight(0xdce8ed,0x172027,2.15));
- let k=new THREE.DirectionalLight(0xffffff,3.0);k.position.set(6,8,7);scene.add(k);
- let f=new THREE.DirectionalLight(0x9ec6d5,1.4);f.position.set(-6,3,-6);scene.add(f);
- let r=new THREE.DirectionalLight(0xffffff,1.15);r.position.set(2,-3,8);scene.add(r);
- const floor=new THREE.Mesh(new THREE.CircleGeometry(13,64),new THREE.ShadowMaterial({opacity:.23}));
- floor.rotation.x=-Math.PI/2;floor.position.y=-2.82;floor.receiveShadow=true;scene.add(floor);
- build();resize();resetCam();animate();
-}
-function resize(){let r=view.getBoundingClientRect();renderer.setSize(r.width,r.height,false);camera.aspect=r.width/r.height;camera.updateProjectionMatrix();}
-function apply(){cam.rx=Math.max(-1.4,Math.min(1.4,cam.rx));cam.d=Math.max(2.0,Math.min(22,cam.d));let cx=Math.cos(cam.rx),sx=Math.sin(cam.rx),cy=Math.cos(cam.ry),sy=Math.sin(cam.ry);camera.position.set(cam.tx+cam.d*cx*sy,cam.ty+cam.d*sx,cam.tz+cam.d*cx*cy);camera.lookAt(cam.tx,cam.ty,cam.tz);}
-function resetCam(){cam.rx=-.20;cam.ry=-.62;cam.d=7.9;cam.tx=0;cam.ty=0;cam.tz=0;apply();}
-function front(){cam.rx=-.08;cam.ry=0;cam.d=7.9;apply()}
-function side(){cam.rx=-.10;cam.ry=Math.PI/2;cam.d=7.9;apply()}
-function topView(){cam.rx=-1.20;cam.ry=0;cam.d=7.9;apply()}
-function animate(){requestAnimationFrame(animate);if(auto){cam.ry+=.004;apply()}renderer.render(scene,camera)}
-document.getElementById("auto").onclick=()=>{auto=!auto;document.getElementById("auto").classList.toggle("active",auto)}
-window.addEventListener("resize",resize);
-
-canvas.addEventListener("pointerdown",e=>{e.preventDefault();canvas.setPointerCapture?.(e.pointerId);cam.drag=true;cam.x=e.clientX;cam.y=e.clientY});
-canvas.addEventListener("pointermove",e=>{if(!cam.drag)return;e.preventDefault();let dx=e.clientX-cam.x,dy=e.clientY-cam.y;cam.ry+=dx*.008;cam.rx+=dy*.006;cam.x=e.clientX;cam.y=e.clientY;apply()});
-canvas.addEventListener("pointerup",e=>{cam.drag=false;try{canvas.releasePointerCapture?.(e.pointerId)}catch(_){}});
-canvas.addEventListener("pointercancel",()=>cam.drag=false);
-canvas.addEventListener("wheel",e=>{e.preventDefault();cam.d*=Math.exp(e.deltaY*.0015);apply()},{passive:false});
-canvas.addEventListener("touchstart",e=>{if(e.touches.length===2)cam.pinch=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY)},{passive:false});
-canvas.addEventListener("touchmove",e=>{if(e.touches.length===2){e.preventDefault();let d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);if(cam.pinch)cam.d*=cam.pinch/d;cam.pinch=d;apply()}},{passive:false});
-init();
-</script>
-</body>
-</html>
+</script></body></html>
